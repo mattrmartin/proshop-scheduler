@@ -3,13 +3,22 @@
 Ordered. Top unblocked item first. Keep current: remove done, add deferred.
 
 ## Phase 0 — scaffold
-- [ ] **Enable phone/SMS auth** in the Supabase dashboard: Auth → Phone provider
-      on, Twilio creds (Account SID / Auth Token / Message Service SID). Client
-      wiring + env are done; only the dashboard toggle + Twilio remain (owner).
-- [ ] Deploy skeleton to Vercel (needs a git remote first — none set yet).
+- [ ] Deploy skeleton to Vercel (git remote now set: github.com/mattrmartin/proshop-scheduler).
+
+## Auth — finish before real launch
+- [ ] **Enable phone/SMS auth** (staff): Supabase dashboard → Auth → Phone provider
+      on, Twilio creds (Account SID / Auth Token / Message Service SID). Client wiring
+      + env are done; only the dashboard toggle + Twilio remain (owner).
+- [ ] **Remove the dev admin bypass** once real auth is live: the "Sign in as Cole
+      (dev)" button + NEXT_PUBLIC_DEV_ADMIN_* env vars in [src/app/login/page.tsx].
+      Also revisit the seeded dev admin (email mattrobm+cole@gmail.com, placeholder
+      phone) — give Cole a real phone identity.
 
 ## Phase 1 — core loop (MVP)
-- [ ] Admin: create/open a week (dates, per-day business hours, per-day events).
+- [x] Admin: create/open a week (Monday start + default business hours; draft→open→
+      published status). **Remaining in this item:** per-day business-hours tuning and
+      per-day events (Ladies Mem. Guest, 18ers, FNF, …) — build next.
+- [ ] Week detail: edit per-day business hours + add/remove per-day events.
 - [ ] Staff intake: weekly hourly availability grid (drag-select), greyed closed hours,
       per-day "want off" toggle. Soft Thu-noon deadline.
 - [ ] Cole's build board: availability grid, assign per-person start/end per day
