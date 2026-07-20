@@ -3,10 +3,11 @@
 Ordered. Top unblocked item first. Keep current: remove done, add deferred.
 
 ## Phase 0 — scaffold
-- [ ] Deploy to Vercel (owner: import github.com/mattrmartin/proshop-scheduler in the
-      Vercel dashboard, set NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      leave all NEXT_PUBLIC_DEV_* unset so the dev-login buttons stay hidden in prod).
-      Build is green and deploy-ready; only the owner's Vercel account step remains.
+- [x] Deployed to Vercel (production): https://proshop-scheduler.vercel.app — Git-linked
+      to github.com/mattrmartin/proshop-scheduler, env vars set (Production).
+      **Gotcha:** Hobby plan BLOCKS Git auto-deploys whose commit-author email isn't the
+      Vercel account owner's. Commit as `mattrobm+golf@gmail.com` (repo git config already
+      set) or deploys get stuck in BLOCKED state. Env vars are Production-only for now.
 
 ## Auth — finish before real launch
 - [ ] **Enable phone/SMS auth** (staff): Supabase dashboard → Auth → Phone provider
