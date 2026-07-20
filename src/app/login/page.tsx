@@ -48,59 +48,79 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-6 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Pro Shop Scheduler</h1>
-        <p className="text-muted-foreground text-sm">Sign in</p>
+    <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center gap-6 p-6">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <span
+          aria-hidden
+          className="bg-primary text-primary-foreground flex size-12 items-center justify-center rounded-2xl text-2xl shadow-sm"
+        >
+          ⛳
+        </span>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Pro Shop Scheduler
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Hayden Lake Country Club
+          </p>
+        </div>
       </div>
 
-      <form
-        className="flex flex-col gap-3"
-        onSubmit={(e) => {
-          e.preventDefault();
-          void signIn(email, password);
-        }}
-      >
-        <input
-          type="email"
-          required
-          placeholder="Email"
-          autoComplete="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="border-input bg-background rounded-md border px-3 py-2 text-sm"
-        />
-        <input
-          type="password"
-          required
-          placeholder="Password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="border-input bg-background rounded-md border px-3 py-2 text-sm"
-        />
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <Button type="submit" disabled={pending}>
-          {pending ? "Signing in…" : "Sign in"}
-        </Button>
-      </form>
-
-      <div className="flex flex-col gap-2">
-        <p className="text-muted-foreground text-xs">Quick demo access</p>
-        {DEMO_ACCOUNTS.map((acct) => (
-          <Button
-            key={acct.email}
-            type="button"
-            variant="outline"
-            disabled={pending}
-            onClick={() => void signIn(acct.email, acct.password)}
-          >
-            {acct.label}
+      <div className="panel flex flex-col gap-4 p-6">
+        <form
+          className="flex flex-col gap-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void signIn(email, password);
+          }}
+        >
+          <input
+            type="email"
+            required
+            placeholder="Email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="border-input bg-background focus-visible:ring-ring/40 rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2"
+          />
+          <input
+            type="password"
+            required
+            placeholder="Password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="border-input bg-background focus-visible:ring-ring/40 rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2"
+          />
+          {error && <p className="text-destructive text-sm">{error}</p>}
+          <Button type="submit" size="lg" disabled={pending}>
+            {pending ? "Signing in…" : "Sign in"}
           </Button>
-        ))}
+        </form>
+
+        <div className="flex items-center gap-3">
+          <span className="bg-border h-px flex-1" />
+          <span className="text-muted-foreground text-xs">or try the demo</span>
+          <span className="bg-border h-px flex-1" />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          {DEMO_ACCOUNTS.map((acct) => (
+            <Button
+              key={acct.email}
+              type="button"
+              variant="outline"
+              size="lg"
+              disabled={pending}
+              onClick={() => void signIn(acct.email, acct.password)}
+            >
+              {acct.label}
+            </Button>
+          ))}
+        </div>
       </div>
 
-      <p className="text-muted-foreground text-xs">
+      <p className="text-muted-foreground text-center text-xs">
         Staff phone sign-in is coming later.
       </p>
     </main>

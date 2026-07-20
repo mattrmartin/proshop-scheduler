@@ -10,12 +10,7 @@ import {
 } from "./business-hours-form";
 import { AddEventForm } from "./add-event-form";
 import { deleteEvent } from "./actions";
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  open: "Open for availability",
-  published: "Published",
-};
+import { StatusBadge } from "@/components/status-badge";
 
 type StoredHours = Record<string, { open: string; close: string }>;
 
@@ -82,21 +77,21 @@ export default async function WeekDetailPage({
         <Link href="/admin" className="text-muted-foreground text-sm hover:underline">
           ← All weeks
         </Link>
-        <h1 className="mt-1 text-xl font-semibold">
-          {formatWeekRange(week.start_date)}
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          {STATUS_LABELS[week.status] ?? week.status}
-        </p>
+        <div className="mt-1 flex flex-wrap items-center gap-2">
+          <h1 className="text-xl font-semibold tracking-tight">
+            {formatWeekRange(week.start_date)}
+          </h1>
+          <StatusBadge status={week.status} />
+        </div>
         <Link
           href={`/admin/weeks/${week.id}/board`}
-          className="mt-2 inline-block text-sm font-medium hover:underline"
+          className="text-primary mt-2 inline-block text-sm font-medium hover:underline"
         >
           Build schedule →
         </Link>
       </div>
 
-      <section className="flex flex-col gap-3 rounded-lg border p-4">
+      <section className="panel flex flex-col gap-3 p-4">
         <div className="flex items-baseline justify-between">
           <h2 className="font-medium">Availability responses</h2>
           <span className="text-muted-foreground text-sm">
@@ -152,7 +147,7 @@ export default async function WeekDetailPage({
         days={days}
       />
 
-      <section className="flex flex-col gap-3 rounded-lg border p-4">
+      <section className="panel flex flex-col gap-3 p-4">
         <h2 className="font-medium">Events</h2>
         <AddEventForm
           weekId={week.id}

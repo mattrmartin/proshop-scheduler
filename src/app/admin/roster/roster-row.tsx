@@ -38,7 +38,7 @@ export function RosterRow({
 
   if (!editing) {
     return (
-      <li className="flex items-center justify-between rounded-lg border px-4 py-2">
+      <li className="panel flex items-center justify-between px-4 py-2">
         <div>
           <span className="font-medium">{user.name}</span>
           <span className="text-muted-foreground ml-2 text-sm">
@@ -54,7 +54,7 @@ export function RosterRow({
   }
 
   return (
-    <li className="rounded-lg border p-4">
+    <li className="panel p-4">
       <form action={action} className="flex flex-wrap items-end gap-3">
         <input type="hidden" name="id" value={user.id} />
         <UserFields defaults={user} />

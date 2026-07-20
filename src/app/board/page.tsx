@@ -25,7 +25,7 @@ export default async function BoardListPage() {
             <li key={w.id}>
               <Link
                 href={`/board/${w.id}`}
-                className="block rounded-lg border px-4 py-3 font-medium hover:underline"
+                className="panel hover:border-primary/40 block px-4 py-3 font-medium transition-colors"
               >
                 {formatWeekRange(w.start_date)}
               </Link>

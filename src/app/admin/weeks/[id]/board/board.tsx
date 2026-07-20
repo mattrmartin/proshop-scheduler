@@ -143,7 +143,7 @@ export function BuildBoard({
                             className={
                               a.status === "off"
                                 ? "text-muted-foreground font-medium"
-                                : "font-medium text-green-700"
+                                : "text-primary font-medium"
                             }
                           >
                             {assignmentLabel(a)}
@@ -227,7 +227,7 @@ function CellEditor({
   return (
     <form
       action={action}
-      className="flex flex-wrap items-end gap-3 rounded-lg border bg-muted/30 p-4"
+      className="panel flex flex-wrap items-end gap-3 bg-muted/40 p-4"
     >
       <input type="hidden" name="week_id" value={weekId} />
       <input type="hidden" name="user_id" value={userId} />

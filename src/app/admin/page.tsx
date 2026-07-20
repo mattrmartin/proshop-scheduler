@@ -5,12 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CreateWeekForm } from "@/app/admin/create-week-form";
 import { setWeekStatus } from "@/app/admin/actions";
 import { formatWeekRange, nextOpenMonday } from "@/lib/dates";
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  open: "Open for availability",
-  published: "Published",
-};
+import { StatusBadge } from "@/components/status-badge";
 
 export default async function AdminWeeksPage() {
   const supabase = await createClient();
@@ -27,7 +22,10 @@ export default async function AdminWeeksPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/admin/roster" className="text-sm font-medium hover:underline">
+      <Link
+        href="/admin/roster"
+        className="text-primary text-sm font-medium hover:underline"
+      >
         Manage roster →
       </Link>
       <CreateWeekForm defaultStart={suggestedStart} />
@@ -41,18 +39,16 @@ export default async function AdminWeeksPage() {
             {weeks.map((w) => (
               <li
                 key={w.id}
-                className="flex items-center justify-between rounded-lg border px-4 py-3"
+                className="panel flex items-center justify-between px-4 py-3"
               >
-                <div>
+                <div className="flex flex-col items-start gap-1">
                   <Link
                     href={`/admin/weeks/${w.id}`}
                     className="font-medium hover:underline"
                   >
                     {formatWeekRange(w.start_date)}
                   </Link>
-                  <div className="text-muted-foreground text-sm">
-                    {STATUS_LABELS[w.status] ?? w.status}
-                  </div>
+                  <StatusBadge status={w.status} />
                 </div>
                 <div className="flex gap-2">
                   {w.status === "draft" && (

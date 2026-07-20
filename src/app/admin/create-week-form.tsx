@@ -11,7 +11,7 @@ export function CreateWeekForm({ defaultStart }: { defaultStart: string }) {
   const [state, action, pending] = useActionState(createWeek, initial);
 
   return (
-    <form action={action} className="flex flex-col gap-3 rounded-lg border p-4">
+    <form action={action} className="panel flex flex-col gap-3 p-4">
       <h2 className="font-medium">Open a new week</h2>
       <div className="flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1 text-sm">

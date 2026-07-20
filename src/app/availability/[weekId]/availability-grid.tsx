@@ -141,8 +141,8 @@ export function AvailabilityGrid({
                           "h-6 w-16 border-b border-r border-l first:border-l",
                           active
                             ? on
-                              ? "bg-green-500 cursor-pointer"
-                              : "bg-background cursor-pointer hover:bg-green-100"
+                              ? "bg-primary cursor-pointer"
+                              : "bg-background hover:bg-primary/15 cursor-pointer"
                             : "bg-muted cursor-not-allowed",
                         ].join(" ")}
                       />

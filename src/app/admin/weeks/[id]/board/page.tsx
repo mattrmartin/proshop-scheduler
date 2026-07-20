@@ -120,7 +120,7 @@ export default async function BoardPage({
         </p>
         <Link
           href={`/board/${week.id}`}
-          className="mt-1 inline-block text-sm font-medium hover:underline"
+          className="text-primary mt-1 inline-block text-sm font-medium hover:underline"
         >
           Preview shared board →
         </Link>

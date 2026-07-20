@@ -27,7 +27,7 @@ export function BusinessHoursForm({
   const [state, action, pending] = useActionState(updateBusinessHours, initial);
 
   return (
-    <form action={action} className="flex flex-col gap-3 rounded-lg border p-4">
+    <form action={action} className="panel flex flex-col gap-3 p-4">
       <h2 className="font-medium">Business hours</h2>
       <input type="hidden" name="week_id" value={weekId} />
       <input type="hidden" name="start_date" value={startDate} />

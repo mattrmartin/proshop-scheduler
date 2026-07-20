@@ -20,7 +20,7 @@ export function AddUserForm() {
     <form
       ref={formRef}
       action={action}
-      className="flex flex-wrap items-end gap-3 rounded-lg border p-4"
+      className="panel flex flex-wrap items-end gap-3 p-4"
     >
       <h2 className="w-full font-medium">Add a person</h2>
       <UserFields />

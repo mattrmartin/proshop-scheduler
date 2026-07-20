@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrentAppUser } from "@/lib/auth";
 import { SignOutButton } from "@/components/sign-out-button";
+import { AppHeader } from "@/components/app-header";
 
 export default async function AvailabilityLayout({
   children,
@@ -13,13 +14,12 @@ export default async function AvailabilityLayout({
 
   return (
     <div className="min-h-dvh">
-      <header className="flex items-center justify-between border-b px-6 py-3">
-        <span className="font-semibold">Pro Shop Scheduler</span>
-        <div className="flex items-center gap-3">
-          <span className="text-muted-foreground text-sm">{user.name}</span>
-          <SignOutButton />
-        </div>
-      </header>
+      <AppHeader>
+        <span className="text-muted-foreground hidden text-sm sm:inline">
+          {user.name}
+        </span>
+        <SignOutButton />
+      </AppHeader>
       <main className="mx-auto max-w-3xl p-6">{children}</main>
     </div>
   );

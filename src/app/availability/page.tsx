@@ -23,7 +23,7 @@ export default async function AvailabilityListPage() {
         </p>
         <Link
           href="/board"
-          className="mt-2 inline-block text-sm font-medium hover:underline"
+          className="text-primary mt-2 inline-block text-sm font-medium hover:underline"
         >
           View published schedules →
         </Link>
@@ -39,7 +39,7 @@ export default async function AvailabilityListPage() {
             <li key={w.id}>
               <Link
                 href={`/availability/${w.id}`}
-                className="block rounded-lg border px-4 py-3 font-medium hover:underline"
+                className="panel hover:border-primary/40 block px-4 py-3 font-medium transition-colors"
               >
                 {formatWeekRange(w.start_date)}
               </Link>
