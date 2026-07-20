@@ -3,7 +3,10 @@
 Ordered. Top unblocked item first. Keep current: remove done, add deferred.
 
 ## Phase 0 — scaffold
-- [ ] Deploy skeleton to Vercel (git remote now set: github.com/mattrmartin/proshop-scheduler).
+- [ ] Deploy to Vercel (owner: import github.com/mattrmartin/proshop-scheduler in the
+      Vercel dashboard, set NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      leave all NEXT_PUBLIC_DEV_* unset so the dev-login buttons stay hidden in prod).
+      Build is green and deploy-ready; only the owner's Vercel account step remains.
 
 ## Auth — finish before real launch
 - [ ] **Enable phone/SMS auth** (staff): Supabase dashboard → Auth → Phone provider
@@ -24,10 +27,12 @@ Ordered. Top unblocked item first. Keep current: remove done, add deferred.
       device; consider 30-min granularity if Cole wants it.
 - [x] Cole's build board: availability underlay, assign per-person start/end per day
       ("C" = close, "X" = off, clear = blank), staff in rank order, soft experience
-      display. Per-cell inline editor. **Follow-up:** show a per-day headcount tally.
+      display. Per-cell inline editor. Per-day working-headcount tally in the footer.
 - [x] Full shared board view (/board) + "just me" toggle + own-row highlight.
       Published-only for staff; admin preview. **SMS blast on publish still TODO
       (Twilio).**
+- [x] Admin roster management (/admin/roster): add/edit people, rank order, E.164
+      phones, no-auth rows for people who haven't logged in yet.
 - [ ] Publish → SMS blast to all staff ("Schedule's up" + link). Needs Twilio.
 - [ ] Post-publish edit → notify only affected person.
 - [ ] Auto-reminders to non-submitters (Wed + Thu AM).
