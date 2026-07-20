@@ -3,10 +3,10 @@
 Ordered. Top unblocked item first. Keep current: remove done, add deferred.
 
 ## Phase 0 — scaffold
-- [ ] Create Supabase project; wire client + env; enable **phone/SMS auth** (Twilio provider).
-- [ ] First migration: `users`, `weeks`, `events`, `availability`, `assignments`
-      (see PROJECT_CONTEXT.md data-model sketch). RLS: staff read own + published board.
-- [ ] Deploy skeleton to Vercel.
+- [ ] **Enable phone/SMS auth** in the Supabase dashboard: Auth → Phone provider
+      on, Twilio creds (Account SID / Auth Token / Message Service SID). Client
+      wiring + env are done; only the dashboard toggle + Twilio remain (owner).
+- [ ] Deploy skeleton to Vercel (needs a git remote first — none set yet).
 
 ## Phase 1 — core loop (MVP)
 - [ ] Admin: create/open a week (dates, per-day business hours, per-day events).
