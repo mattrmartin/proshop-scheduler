@@ -3,7 +3,6 @@
 Ordered. Top unblocked item first. Keep current: remove done, add deferred.
 
 ## Phase 0 — scaffold
-- [ ] Scaffold Next.js (App Router) + TS strict + Tailwind v4 + shadcn v4.
 - [ ] Create Supabase project; wire client + env; enable **phone/SMS auth** (Twilio provider).
 - [ ] First migration: `users`, `weeks`, `events`, `availability`, `assignments`
       (see PROJECT_CONTEXT.md data-model sketch). RLS: staff read own + published board.
