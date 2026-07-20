@@ -18,8 +18,10 @@ Ordered. Top unblocked item first. Keep current: remove done, add deferred.
 - [x] Admin: create/open a week — Monday start + default hours, draft→open→published
       status, and a week-detail page for per-day business-hours tuning + per-day events
       (add/remove). Closed day = omitted from business_hours_by_day.
-- [ ] Staff intake: weekly hourly availability grid (drag-select), greyed closed hours,
-      per-day "want off" toggle. Soft Thu-noon deadline.
+- [x] Staff intake: weekly hourly availability grid (drag/tap-select), greyed closed
+      hours, per-day "want off" toggle, soft Thu-noon note. Saves free_hour_ranges +
+      want_off per day; prefills on load. **Follow-ups:** verify drag on a real touch
+      device; consider 30-min granularity if Cole wants it.
 - [ ] Cole's build board: availability grid, assign per-person start/end per day
       ("C" = close), staff in rank order, soft experience-mix display.
 - [ ] Publish → SMS blast; full shared board view + "just me" toggle.
