@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { shortTime, assignmentLabel } from "@/lib/schedule-format";
 import { saveAssignment, type AssignState } from "./actions";
 
 type Range = { start: string; end: string };
@@ -29,13 +30,6 @@ export type CellData = {
   } | null;
 };
 
-/** "06:00" / "14:00:00" -> "6:00" (12-hour clock, no am/pm, like Cole's sheet). */
-function shortTime(t: string): string {
-  const [hh, mm] = t.split(":");
-  const h = Number(hh) % 12 || 12;
-  return `${h}:${mm}`;
-}
-
 function availHint(avail: CellData["avail"]): {
   text: string;
   tone: "off" | "free" | "none";
@@ -49,13 +43,6 @@ function availHint(avail: CellData["avail"]): {
       .join(", "),
     tone: "free",
   };
-}
-
-function assignmentText(a: NonNullable<CellData["assignment"]>): string {
-  if (a.status === "off") return "X";
-  const start = a.start ? shortTime(a.start) : "?";
-  const end = a.isClose ? "C" : a.end ? shortTime(a.end) : "?";
-  return `${start}–${end}`;
 }
 
 export function BuildBoard({
@@ -159,7 +146,7 @@ export function BuildBoard({
                                 : "font-medium text-green-700"
                             }
                           >
-                            {assignmentText(a)}
+                            {assignmentLabel(a)}
                           </span>
                         ) : (
                           <span

@@ -118,6 +118,12 @@ export default async function BoardPage({
         <p className="text-muted-foreground text-sm">
           Click a cell to assign a shift. Availability is a guide, not a limit.
         </p>
+        <Link
+          href={`/board/${week.id}`}
+          className="mt-1 inline-block text-sm font-medium hover:underline"
+        >
+          Preview shared board →
+        </Link>
       </div>
 
       <BuildBoard
