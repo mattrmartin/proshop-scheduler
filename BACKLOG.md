@@ -18,6 +18,16 @@ Ordered. Top unblocked item first. Keep current: remove done, add deferred.
       Also revisit the seeded dev admin (email mattrobm+cole@gmail.com, placeholder
       phone) — give Cole a real phone identity.
 
+## UX polish from Cole/Morgan demo feedback
+- [x] Create-week date defaults to next un-opened Monday.
+- [x] Availability grid: fixed touch-scroll trap (removed touch-action:none).
+- [x] Week detail: "Availability responses" tracker (submitted vs waiting).
+- [ ] **Quick shift presets** in Cole's cell editor (+ staff intake): one-click
+      "Open / Mid / Close / Off". Needs Cole's default preset times.
+- [ ] **Empty-publish guard**: confirm before publishing a week with 0 shifts.
+- [ ] (Maybe) soft per-day headcount target Cole can set; board flags days under
+      it. No enforcement. Deferred unless eyeballing isn't enough.
+
 ## Phase 1 — core loop (MVP)
 - [x] Admin: create/open a week — Monday start + default hours, draft→open→published
       status, and a week-detail page for per-day business-hours tuning + per-day events
