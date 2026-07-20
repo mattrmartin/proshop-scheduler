@@ -1,11 +1,12 @@
 import { createBrowserClient } from "@supabase/ssr";
 
 import { env } from "@/lib/env";
+import type { Database } from "@/lib/database.types";
 
 /**
  * Supabase client for use in Client Components (browser). Reads/writes the auth
  * session from browser cookies via @supabase/ssr.
  */
 export function createClient() {
-  return createBrowserClient(env.supabaseUrl, env.supabaseAnonKey);
+  return createBrowserClient<Database>(env.supabaseUrl, env.supabaseAnonKey);
 }

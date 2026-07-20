@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 import { env } from "@/lib/env";
+import type { Database } from "@/lib/database.types";
 
 /**
  * Refreshes the Supabase auth session on every request and rewrites the auth
@@ -14,7 +15,7 @@ import { env } from "@/lib/env";
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(env.supabaseUrl, env.supabaseAnonKey, {
+  const supabase = createServerClient<Database>(env.supabaseUrl, env.supabaseAnonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
