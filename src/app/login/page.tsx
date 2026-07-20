@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 
 // Dev-only convenience: when these are set (see .env.local) a "Sign in as Cole"
 // button appears that fills the real credentials. Never set in production.
-const DEV_EMAIL = process.env.NEXT_PUBLIC_DEV_ADMIN_EMAIL;
-const DEV_PASSWORD = process.env.NEXT_PUBLIC_DEV_ADMIN_PASSWORD;
+const DEV_ADMIN_EMAIL = process.env.NEXT_PUBLIC_DEV_ADMIN_EMAIL;
+const DEV_ADMIN_PASSWORD = process.env.NEXT_PUBLIC_DEV_ADMIN_PASSWORD;
+const DEV_STAFF_EMAIL = process.env.NEXT_PUBLIC_DEV_STAFF_EMAIL;
+const DEV_STAFF_PASSWORD = process.env.NEXT_PUBLIC_DEV_STAFF_PASSWORD;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,7 +33,7 @@ export default function LoginPage() {
       setPending(false);
       return;
     }
-    router.push("/admin");
+    router.push("/"); // role-aware landing decides admin vs staff
     router.refresh();
   }
 
@@ -73,15 +75,29 @@ export default function LoginPage() {
         </Button>
       </form>
 
-      {DEV_EMAIL && DEV_PASSWORD && (
-        <Button
-          type="button"
-          variant="outline"
-          disabled={pending}
-          onClick={() => void signIn(DEV_EMAIL, DEV_PASSWORD)}
-        >
-          Sign in as Cole (dev)
-        </Button>
+      {(DEV_ADMIN_EMAIL || DEV_STAFF_EMAIL) && (
+        <div className="flex flex-col gap-2">
+          {DEV_ADMIN_EMAIL && DEV_ADMIN_PASSWORD && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pending}
+              onClick={() => void signIn(DEV_ADMIN_EMAIL, DEV_ADMIN_PASSWORD)}
+            >
+              Sign in as Cole — admin (dev)
+            </Button>
+          )}
+          {DEV_STAFF_EMAIL && DEV_STAFF_PASSWORD && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pending}
+              onClick={() => void signIn(DEV_STAFF_EMAIL, DEV_STAFF_PASSWORD)}
+            >
+              Sign in as Morgan — staff (dev)
+            </Button>
+          )}
+        </div>
       )}
 
       <p className="text-muted-foreground text-xs">

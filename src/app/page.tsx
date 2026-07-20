@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 
-export default function Home() {
-  // Everything lives under /admin for now (staff views come later).
-  redirect("/admin");
+import { getCurrentAppUser } from "@/lib/auth";
+
+export default async function Home() {
+  const user = await getCurrentAppUser();
+  if (!user) redirect("/login");
+  redirect(user.role === "admin" ? "/admin" : "/availability");
 }
