@@ -22,8 +22,9 @@ Ordered. Top unblocked item first. Keep current: remove done, add deferred.
       hours, per-day "want off" toggle, soft Thu-noon note. Saves free_hour_ranges +
       want_off per day; prefills on load. **Follow-ups:** verify drag on a real touch
       device; consider 30-min granularity if Cole wants it.
-- [ ] Cole's build board: availability grid, assign per-person start/end per day
-      ("C" = close), staff in rank order, soft experience-mix display.
+- [x] Cole's build board: availability underlay, assign per-person start/end per day
+      ("C" = close, "X" = off, clear = blank), staff in rank order, soft experience
+      display. Per-cell inline editor. **Follow-up:** show a per-day headcount tally.
 - [ ] Publish → SMS blast; full shared board view + "just me" toggle.
 - [ ] Post-publish edit → notify only affected person.
 - [ ] Auto-reminders to non-submitters (Wed + Thu AM).
