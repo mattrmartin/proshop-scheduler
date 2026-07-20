@@ -219,6 +219,16 @@ function CellEditor({
 }) {
   const [state, action, pending] = useActionState(saveAssignment, initial);
   const a = cell?.assignment;
+  const av = cell?.avail;
+
+  // Head start: if no shift yet, prefill from their submitted availability
+  // window (first start → last end). Skip when they requested the day off.
+  const availWindow =
+    av && !av.wantOff && av.ranges.length > 0
+      ? { start: av.ranges[0].start, end: av.ranges[av.ranges.length - 1].end }
+      : null;
+  const defaultStart = a?.start ?? availWindow?.start ?? "";
+  const defaultEnd = a?.end ?? availWindow?.end ?? "";
 
   useEffect(() => {
     if (state.ok) onClose();
@@ -236,6 +246,14 @@ function CellEditor({
       <div className="mr-2">
         <div className="font-medium">{userName}</div>
         <div className="text-muted-foreground text-xs">{dayLabel}</div>
+        {!a && availWindow && (
+          <div className="text-primary text-[11px]">
+            avail {shortTime(availWindow.start)}–{shortTime(availWindow.end)}
+          </div>
+        )}
+        {!a && av?.wantOff && (
+          <div className="text-[11px] text-amber-700">requested off</div>
+        )}
       </div>
 
       <label className="flex flex-col gap-1 text-sm">
@@ -243,7 +261,7 @@ function CellEditor({
         <input
           type="time"
           name="start_time"
-          defaultValue={a?.start ?? ""}
+          defaultValue={defaultStart}
           className="border-input bg-background rounded-md border px-2 py-1 text-sm"
         />
       </label>
@@ -252,7 +270,7 @@ function CellEditor({
         <input
           type="time"
           name="end_time"
-          defaultValue={a?.end ?? ""}
+          defaultValue={defaultEnd}
           className="border-input bg-background rounded-md border px-2 py-1 text-sm"
         />
       </label>

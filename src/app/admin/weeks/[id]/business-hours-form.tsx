@@ -34,22 +34,22 @@ export function BusinessHoursForm({
 
       <div className="flex flex-col gap-2">
         {days.map((d) => (
-          <div key={d.date} className="flex flex-wrap items-center gap-3">
-            <span className="w-28 text-sm">{d.label}</span>
+          <div key={d.date} className="flex items-center gap-2">
+            <span className="w-24 shrink-0 text-sm">{d.label}</span>
             <input
               type="time"
               name={`open_${d.date}`}
               defaultValue={d.open}
-              className="border-input bg-background rounded-md border px-2 py-1 text-sm"
+              className="border-input bg-background w-28 shrink-0 rounded-md border px-2 py-1 text-sm"
             />
-            <span className="text-muted-foreground text-sm">to</span>
+            <span className="text-muted-foreground shrink-0 text-sm">–</span>
             <input
               type="time"
               name={`close_${d.date}`}
               defaultValue={d.close}
-              className="border-input bg-background rounded-md border px-2 py-1 text-sm"
+              className="border-input bg-background w-28 shrink-0 rounded-md border px-2 py-1 text-sm"
             />
-            <label className="text-muted-foreground flex items-center gap-1 text-sm">
+            <label className="text-muted-foreground ml-1 flex shrink-0 items-center gap-1 text-sm">
               <input
                 type="checkbox"
                 name={`closed_${d.date}`}

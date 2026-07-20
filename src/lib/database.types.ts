@@ -142,6 +142,27 @@ export type Database = {
           },
         ]
       }
+      settings: {
+        Row: {
+          default_close: string
+          default_open: string
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          default_close?: string
+          default_open?: string
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          default_close?: string
+          default_open?: string
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           auth_user_id: string | null
@@ -204,7 +225,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      ensure_open_weeks: { Args: Record<PropertyKey, never>; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

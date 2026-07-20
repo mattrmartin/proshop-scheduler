@@ -34,7 +34,7 @@ export async function createWeek(
   const { error } = await supabase.from("weeks").insert({
     start_date: startDate,
     business_hours_by_day: businessHours as Json,
-    status: "draft",
+    status: "open",
   });
 
   if (error) {
