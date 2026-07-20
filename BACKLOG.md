@@ -15,10 +15,9 @@ Ordered. Top unblocked item first. Keep current: remove done, add deferred.
       phone) — give Cole a real phone identity.
 
 ## Phase 1 — core loop (MVP)
-- [x] Admin: create/open a week (Monday start + default business hours; draft→open→
-      published status). **Remaining in this item:** per-day business-hours tuning and
-      per-day events (Ladies Mem. Guest, 18ers, FNF, …) — build next.
-- [ ] Week detail: edit per-day business hours + add/remove per-day events.
+- [x] Admin: create/open a week — Monday start + default hours, draft→open→published
+      status, and a week-detail page for per-day business-hours tuning + per-day events
+      (add/remove). Closed day = omitted from business_hours_by_day.
 - [ ] Staff intake: weekly hourly availability grid (drag-select), greyed closed hours,
       per-day "want off" toggle. Soft Thu-noon deadline.
 - [ ] Cole's build board: availability grid, assign per-person start/end per day
