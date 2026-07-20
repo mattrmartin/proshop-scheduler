@@ -25,7 +25,10 @@ Ordered. Top unblocked item first. Keep current: remove done, add deferred.
 - [x] Cole's build board: availability underlay, assign per-person start/end per day
       ("C" = close, "X" = off, clear = blank), staff in rank order, soft experience
       display. Per-cell inline editor. **Follow-up:** show a per-day headcount tally.
-- [ ] Publish → SMS blast; full shared board view + "just me" toggle.
+- [x] Full shared board view (/board) + "just me" toggle + own-row highlight.
+      Published-only for staff; admin preview. **SMS blast on publish still TODO
+      (Twilio).**
+- [ ] Publish → SMS blast to all staff ("Schedule's up" + link). Needs Twilio.
 - [ ] Post-publish edit → notify only affected person.
 - [ ] Auto-reminders to non-submitters (Wed + Thu AM).
 
