@@ -23,6 +23,9 @@ export default async function AdminWeeksPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <Link href="/admin/roster" className="text-sm font-medium hover:underline">
+        Manage roster →
+      </Link>
       <CreateWeekForm />
 
       <section className="flex flex-col gap-3">
