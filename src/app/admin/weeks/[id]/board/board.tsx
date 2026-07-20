@@ -168,6 +168,30 @@ export function BuildBoard({
               </tr>
             ))}
           </tbody>
+          <tfoot>
+            <tr>
+              <td className="bg-background sticky left-0 z-10 border-t px-2 py-1 text-xs font-medium">
+                Working
+              </td>
+              {days.map((d) => {
+                const count = users.reduce(
+                  (n, u) =>
+                    cells[`${u.id}|${d.date}`]?.assignment?.status === "working"
+                      ? n + 1
+                      : n,
+                  0,
+                );
+                return (
+                  <td
+                    key={d.date}
+                    className="text-muted-foreground border-l border-t px-2 py-1 text-xs"
+                  >
+                    {count}
+                  </td>
+                );
+              })}
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
