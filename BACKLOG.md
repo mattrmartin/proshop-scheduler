@@ -18,15 +18,23 @@ Ordered. Top unblocked item first. Keep current: remove done, add deferred.
       Also revisit the seeded dev admin (email mattrobm+cole@gmail.com, placeholder
       phone) — give Cole a real phone identity.
 
-## UX polish from Cole/Morgan demo feedback
-- [x] Create-week date defaults to next un-opened Monday.
-- [x] Availability grid: fixed touch-scroll trap (removed touch-action:none).
-- [x] Week detail: "Availability responses" tracker (submitted vs waiting).
-- [ ] **Quick shift presets** in Cole's cell editor (+ staff intake): one-click
-      "Open / Mid / Close / Off". Needs Cole's default preset times.
+## Auto-open model + dashboard redesign (in progress)
+Decision: Cole no longer opens weeks. Standing hours setting drives a rolling
+window of the next 3 Mondays (ensure_open_weeks). "draft" dropped → weeks are
+Accepting → Published. Edits lock at publish.
+- [x] Migration: settings table, drop draft, ensure_open_weeks() (auto-open).
+- [x] Cole dashboard: open weeks + submission progress rings + Build; published below.
+- [x] Build-board wizard prefills start/end from submitted availability (skips want-off).
+- [x] Business-hours rows fit one line.
+- [x] Staff list shows auto-opened weeks + ✓ Submitted / Tap-to-fill.
+- [ ] **Settings UI** for standing business hours (seasonal change in one place)
+      + "apply to all upcoming weeks" button. (settings table exists; no UI yet.)
+- [ ] **Staff inline picker**: expand the week card to the grid instead of a new
+      page (#5); + archive of submitted weeks, editable while status=open (#6).
 - [ ] **Empty-publish guard**: confirm before publishing a week with 0 shifts.
-- [ ] (Maybe) soft per-day headcount target Cole can set; board flags days under
-      it. No enforcement. Deferred unless eyeballing isn't enough.
+- [ ] **Quick shift presets** in Cole's cell editor: one-click Open/Mid/Close/Off.
+      Needs Cole's default preset times.
+- [ ] (Maybe) soft per-day headcount target. Deferred.
 
 ## Phase 1 — core loop (MVP)
 - [x] Admin: create/open a week — Monday start + default hours, draft→open→published
