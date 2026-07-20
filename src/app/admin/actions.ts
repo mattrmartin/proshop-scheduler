@@ -4,25 +4,12 @@ import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/database.types";
+import { isMonday, weekDates } from "@/lib/dates";
 
 const WEEK_STATUSES = ["draft", "open", "published"] as const;
 type WeekStatus = (typeof WEEK_STATUSES)[number];
 
 export type CreateWeekState = { error?: string; ok?: boolean };
-
-/** The 7 ISO dates (Mon–Sun) starting at `startISO`. TZ-safe (UTC math). */
-function weekDates(startISO: string): string[] {
-  const [y, m, d] = startISO.split("-").map(Number);
-  const base = Date.UTC(y, m - 1, d);
-  return Array.from({ length: 7 }, (_, i) =>
-    new Date(base + i * 86_400_000).toISOString().slice(0, 10),
-  );
-}
-
-function isMonday(startISO: string): boolean {
-  const [y, m, d] = startISO.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d)).getUTCDay() === 1;
-}
 
 export async function createWeek(
   _prev: CreateWeekState,

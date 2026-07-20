@@ -1,26 +1,16 @@
+import Link from "next/link";
+
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { CreateWeekForm } from "@/app/admin/create-week-form";
 import { setWeekStatus } from "@/app/admin/actions";
+import { formatWeekRange } from "@/lib/dates";
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "Draft",
   open: "Open for availability",
   published: "Published",
 };
-
-function formatRange(startISO: string): string {
-  const [y, m, d] = startISO.split("-").map(Number);
-  const start = new Date(Date.UTC(y, m - 1, d));
-  const end = new Date(start.getTime() + 6 * 86_400_000);
-  const fmt = (dt: Date) =>
-    dt.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC",
-    });
-  return `${fmt(start)} – ${fmt(end)}, ${y}`;
-}
 
 export default async function AdminWeeksPage() {
   const supabase = await createClient();
@@ -47,7 +37,12 @@ export default async function AdminWeeksPage() {
                 className="flex items-center justify-between rounded-lg border px-4 py-3"
               >
                 <div>
-                  <div className="font-medium">{formatRange(w.start_date)}</div>
+                  <Link
+                    href={`/admin/weeks/${w.id}`}
+                    className="font-medium hover:underline"
+                  >
+                    {formatWeekRange(w.start_date)}
+                  </Link>
                   <div className="text-muted-foreground text-sm">
                     {STATUS_LABELS[w.status] ?? w.status}
                   </div>
