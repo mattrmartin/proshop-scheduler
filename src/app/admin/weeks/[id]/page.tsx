@@ -67,6 +67,12 @@ export default async function WeekDetailPage({
         <p className="text-muted-foreground text-sm">
           {STATUS_LABELS[week.status] ?? week.status}
         </p>
+        <Link
+          href={`/admin/weeks/${week.id}/board`}
+          className="mt-2 inline-block text-sm font-medium hover:underline"
+        >
+          Build schedule →
+        </Link>
       </div>
 
       <BusinessHoursForm
