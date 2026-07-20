@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { CreateWeekForm } from "@/app/admin/create-week-form";
 import { setWeekStatus } from "@/app/admin/actions";
-import { formatWeekRange } from "@/lib/dates";
+import { formatWeekRange, nextOpenMonday } from "@/lib/dates";
 
 const STATUS_LABELS: Record<string, string> = {
   draft: "Draft",
@@ -21,12 +21,16 @@ export default async function AdminWeeksPage() {
 
   if (error) throw error; // surface, don't swallow
 
+  const suggestedStart = nextOpenMonday(
+    (weeks ?? []).map((w) => w.start_date),
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <Link href="/admin/roster" className="text-sm font-medium hover:underline">
         Manage roster →
       </Link>
-      <CreateWeekForm />
+      <CreateWeekForm defaultStart={suggestedStart} />
 
       <section className="flex flex-col gap-3">
         <h2 className="font-medium">Weeks</h2>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 const initial: CreateWeekState = {};
 
-export function CreateWeekForm() {
+export function CreateWeekForm({ defaultStart }: { defaultStart: string }) {
   const [state, action, pending] = useActionState(createWeek, initial);
 
   return (
@@ -20,6 +20,7 @@ export function CreateWeekForm() {
             type="date"
             name="start_date"
             required
+            defaultValue={defaultStart}
             className="border-input bg-background rounded-md border px-3 py-2 text-sm"
           />
         </label>

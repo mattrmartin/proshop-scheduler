@@ -96,10 +96,11 @@ export function AvailabilityGrid({
       <input type="hidden" name="payload" value={payload} />
 
       <div className="overflow-x-auto">
+        {/* No touch-action:none here — it would trap page scroll on phones.
+            On touch, tapping a cell toggles it; drag-paint stays a desktop nicety. */}
         <table
           className="border-separate border-spacing-0 select-none"
           onPointerMove={onPointerMove}
-          style={{ touchAction: "none" }}
         >
           <thead>
             <tr>

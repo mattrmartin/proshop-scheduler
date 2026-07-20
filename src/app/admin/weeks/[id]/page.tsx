@@ -42,6 +42,27 @@ export default async function WeekDetailPage({
     .order("date", { ascending: true });
   if (eventsError) throw eventsError;
 
+  // Availability responses: which staff have submitted for this week.
+  const [
+    { data: staff, error: staffErr },
+    { data: availRows, error: availErr },
+  ] = await Promise.all([
+    supabase
+      .from("users")
+      .select("id, name, department, rank")
+      .eq("role", "staff")
+      .order("department", { ascending: true })
+      .order("rank", { ascending: true }),
+    supabase.from("availability").select("user_id").eq("week_id", id),
+  ]);
+  if (staffErr) throw staffErr;
+  if (availErr) throw availErr;
+
+  const submittedIds = new Set((availRows ?? []).map((r) => r.user_id));
+  const staffList = staff ?? [];
+  const submitted = staffList.filter((u) => submittedIds.has(u.id));
+  const waiting = staffList.filter((u) => !submittedIds.has(u.id));
+
   const stored = (week.business_hours_by_day ?? {}) as StoredHours;
   const dates = weekDates(week.start_date);
   const days: DayHours[] = dates.map((date) => {
@@ -74,6 +95,56 @@ export default async function WeekDetailPage({
           Build schedule →
         </Link>
       </div>
+
+      <section className="flex flex-col gap-3 rounded-lg border p-4">
+        <div className="flex items-baseline justify-between">
+          <h2 className="font-medium">Availability responses</h2>
+          <span className="text-muted-foreground text-sm">
+            {submitted.length} of {staffList.length} submitted
+          </span>
+        </div>
+        {staffList.length === 0 ? (
+          <p className="text-muted-foreground text-sm">No staff on the roster yet.</p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <p className="text-muted-foreground mb-1 text-xs font-medium uppercase">
+                Submitted ({submitted.length})
+              </p>
+              {submitted.length === 0 ? (
+                <p className="text-muted-foreground text-sm">None yet.</p>
+              ) : (
+                <ul className="flex flex-col gap-0.5 text-sm">
+                  {submitted.map((u) => (
+                    <li key={u.id} className="text-green-700">
+                      ✓ {u.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div>
+              <p className="text-muted-foreground mb-1 text-xs font-medium uppercase">
+                Waiting ({waiting.length})
+              </p>
+              {waiting.length === 0 ? (
+                <p className="text-muted-foreground text-sm">Everyone’s in.</p>
+              ) : (
+                <ul className="text-muted-foreground flex flex-col gap-0.5 text-sm">
+                  {waiting.map((u) => (
+                    <li key={u.id}>{u.name}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+        {week.status === "draft" && (
+          <p className="text-muted-foreground text-xs">
+            Open the week (from the weeks list) so staff can submit.
+          </p>
+        )}
+      </section>
 
       <BusinessHoursForm
         weekId={week.id}

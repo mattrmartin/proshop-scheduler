@@ -14,6 +14,24 @@ export function isMonday(startISO: string): boolean {
   return new Date(Date.UTC(y, m - 1, d)).getUTCDay() === 1;
 }
 
+/**
+ * The soonest Monday on/after today that isn't already in `existingStarts`
+ * (all assumed to be Mondays). Used to prefill "open a new week".
+ */
+export function nextOpenMonday(existingStarts: string[]): string {
+  const taken = new Set(existingStarts);
+  const now = new Date();
+  let ms = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const dow = new Date(ms).getUTCDay(); // 0 Sun .. 6 Sat
+  ms += ((1 - dow + 7) % 7) * 86_400_000; // advance to Monday (0 if already Mon)
+  let iso = new Date(ms).toISOString().slice(0, 10);
+  while (taken.has(iso)) {
+    ms += 7 * 86_400_000;
+    iso = new Date(ms).toISOString().slice(0, 10);
+  }
+  return iso;
+}
+
 /** e.g. "Mon Aug 3" */
 export function formatDayShort(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);

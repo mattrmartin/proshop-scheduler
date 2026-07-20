@@ -97,8 +97,8 @@ export default async function AvailabilityWeekPage({
           {formatWeekRange(week.start_date)}
         </h1>
         <p className="text-muted-foreground text-sm">
-          Drag across the hours you can work. Toggle “Day off” to request a day
-          off.
+          Tap the hours you can work (drag to paint on a computer). Toggle “Day
+          off” to request a day off.
         </p>
       </div>
 
