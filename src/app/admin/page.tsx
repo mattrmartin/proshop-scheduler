@@ -78,11 +78,6 @@ export default async function AdminWeeksPage() {
                       </form>
                     </>
                   )}
-                  {w.status === "published" && (
-                    <span className="text-muted-foreground self-center text-sm">
-                      Live
-                    </span>
-                  )}
                 </div>
               </li>
             ))}
