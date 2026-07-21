@@ -3,8 +3,40 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentAppUser } from "@/lib/auth";
 
 export type RosterState = { error?: string; ok?: boolean };
+
+export type RosterPerson = {
+  id: string;
+  name: string;
+  phone: string;
+  role: string;
+  department: string;
+  rank: number;
+};
+
+/** The roster split by department, for the manager dashboard drawer. Admin-only. */
+export async function loadRoster(): Promise<{
+  inside: RosterPerson[];
+  outside: RosterPerson[];
+} | null> {
+  const user = await getCurrentAppUser();
+  if (!user || user.role !== "admin") return null;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("users")
+    .select("id, name, phone, role, department, rank")
+    .order("department", { ascending: true })
+    .order("rank", { ascending: true });
+  if (error) throw error; // surface, don't swallow
+
+  return {
+    inside: (data ?? []).filter((u) => u.department === "inside"),
+    outside: (data ?? []).filter((u) => u.department === "outside"),
+  };
+}
 
 const ROLES = ["admin", "staff"] as const;
 const DEPARTMENTS = ["inside", "outside"] as const;
@@ -55,6 +87,7 @@ export async function createUser(
   }
 
   revalidatePath("/admin/roster");
+  revalidatePath("/admin");
   return { ok: true };
 }
 
@@ -76,5 +109,6 @@ export async function updateUser(
   }
 
   revalidatePath("/admin/roster");
+  revalidatePath("/admin");
   return { ok: true };
 }
