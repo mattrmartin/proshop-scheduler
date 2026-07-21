@@ -39,9 +39,9 @@ Accepting → Published. Edits lock at publish.
       + "apply to all upcoming weeks" button. (settings table exists; no UI yet.)
 - [ ] **Staff inline picker**: expand the week card to the grid instead of a new
       page (#5); + archive of submitted weeks, editable while status=open (#6).
-- [ ] **Empty-publish guard**: confirm before publishing a week with 0 shifts.
-- [ ] **Quick shift presets** in Cole's cell editor: one-click Open/Mid/Close/Off.
-      Needs Cole's default preset times.
+- [x] **Publish** restored on the build board (regression from dashboard redesign)
+      + Unpublish-to-edit, with an **empty-publish confirm guard**.
+- [x] **Shift presets** in the cell editor (6–2, 6–C, 9–5, 12–C) — fill-and-save.
 - [ ] (Maybe) soft per-day headcount target. Deferred.
 
 ## Phase 1 — core loop (MVP)
