@@ -59,12 +59,20 @@ export default async function AdminDashboardPage() {
             Upcoming weeks open automatically. Build and publish when you’re ready.
           </p>
         </div>
-        <Link
-          href="/admin/roster"
-          className="text-primary text-sm font-medium hover:underline"
-        >
-          Manage roster →
-        </Link>
+        <div className="flex flex-col items-end gap-1">
+          <Link
+            href="/admin/roster"
+            className="text-primary text-sm font-medium hover:underline"
+          >
+            Manage roster →
+          </Link>
+          <Link
+            href="/admin/settings"
+            className="text-primary text-sm font-medium hover:underline"
+          >
+            Settings →
+          </Link>
+        </div>
       </div>
 
       <section className="flex flex-col gap-3">
