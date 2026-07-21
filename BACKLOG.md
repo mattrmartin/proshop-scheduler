@@ -18,6 +18,14 @@ Ordered. Top unblocked item first. Keep current: remove done, add deferred.
       Also revisit the seeded dev admin (email mattrobm+cole@gmail.com, placeholder
       phone) — give Cole a real phone identity.
 
+## Operating loop (daily-use views) — done
+- [x] /today: who's on today (both roles), grouped + ranked, viewer highlighted.
+- [x] Staff home leads with "Your shifts" (next + upcoming); availability secondary.
+- [x] Cole dashboard "Today" strip.
+- [x] app_today() so dates match the DB/data clock.
+- [x] Fix serif font fallback → Geist sans.
+- [ ] Staff month calendar of shifts (list exists; calendar is the richer follow-up).
+
 ## Auto-open model + dashboard redesign (in progress)
 Decision: Cole no longer opens weeks. Standing hours setting drives a rolling
 window of the next 3 Mondays (ensure_open_weeks). "draft" dropped → weeks are
