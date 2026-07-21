@@ -10,13 +10,26 @@ Ordered. Top unblocked item first. Keep current: remove done, add deferred.
       set) or deploys get stuck in BLOCKED state. Env vars are Production-only for now.
 
 ## Auth — finish before real launch
-- [ ] **Enable phone/SMS auth** (staff): Supabase dashboard → Auth → Phone provider
-      on, Twilio creds (Account SID / Auth Token / Message Service SID). Client wiring
-      + env are done; only the dashboard toggle + Twilio remain (owner).
-- [ ] **Remove the dev admin bypass** once real auth is live: the "Sign in as Cole
-      (dev)" button + NEXT_PUBLIC_DEV_ADMIN_* env vars in [src/app/login/page.tsx].
-      Also revisit the seeded dev admin (email mattrobm+cole@gmail.com, placeholder
-      phone) — give Cole a real phone identity.
+DECISION (owner): go **free** — drop phone/SMS auth. Use **email magic link**
+(Supabase built-in, passwordless, no Twilio, no 10DLC). Unblocks launch now.
+- [ ] **Email magic-link auth**: Supabase dashboard → Auth → Email provider, enable
+      magic link; configure Site URL + redirect (https://proshop-scheduler.vercel.app
+      /auth/callback). Build the callback route + a "send magic link" login form.
+      Seed real emails on the roster (users.email — add column? currently only phone).
+      NOTE: staff `users` rows key off phone today; magic link keys off email, so add
+      an email field to users and link auth_user_id by email on first sign-in.
+- [ ] **Remove the dev/demo bypass** once real auth is live: the "View as Cole/Morgan
+      (demo)" buttons + DEMO_ACCOUNTS in [src/app/login/page.tsx]. Also the seeded dev
+      users (mattrobm+cole@gmail.com / +morgan) with placeholder phones.
+- [ ] Consider Google sign-in as an even-lower-friction free option alongside magic link.
+
+## Notifications — free plan (was SMS/Twilio)
+Lean on the daily-use app (staff open it for "my shifts") + free channels:
+- [ ] **Email notifications** (Resend free tier ~3k/mo): publish blast ("schedule's
+      up" + link), availability reminders to non-submitters (Wed/Thu AM), post-publish
+      edit → notify only the affected person.
+- [ ] (Optional) **Web push / PWA** for engaged users; add SMS for just the availability
+      reminder later only if response rates lag (~$5–10/mo, needs A2P 10DLC).
 
 ## Operating loop (daily-use views) — done
 - [x] /today: who's on today (both roles), grouped + ranked, viewer highlighted.
