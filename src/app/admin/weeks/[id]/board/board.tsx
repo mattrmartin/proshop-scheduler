@@ -4,31 +4,8 @@ import { useActionState, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { shortTime, assignmentLabel } from "@/lib/schedule-format";
+import type { BoardDay, BoardUser, CellData } from "@/lib/board-data";
 import { saveAssignment, type AssignState } from "./actions";
-
-type Range = { start: string; end: string };
-
-export type BoardDay = {
-  date: string;
-  label: string;
-  hours: { open: string; close: string } | null;
-  events: string[];
-};
-export type BoardUser = {
-  id: string;
-  name: string;
-  department: string;
-  rank: number;
-};
-export type CellData = {
-  avail: { ranges: Range[]; wantOff: boolean } | null;
-  assignment: {
-    status: string;
-    start: string | null;
-    end: string | null;
-    isClose: boolean;
-  } | null;
-};
 
 function availHint(avail: CellData["avail"]): {
   text: string;

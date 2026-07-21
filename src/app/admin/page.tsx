@@ -1,10 +1,8 @@
 import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/server";
-import { formatWeekRange } from "@/lib/dates";
 import { assignmentLabel } from "@/lib/schedule-format";
-import { StatusBadge } from "@/components/status-badge";
-import { ProgressRing } from "@/components/progress-ring";
+import { WeekBoardCard } from "./week-board-card";
 
 type TodayRow = {
   start_time: string | null;
@@ -69,125 +67,99 @@ export default async function AdminDashboardPage() {
 
   const total = staffCount ?? 0;
 
+  const todayChips = todayShifts.map((r) => ({
+    name: r.users?.name?.split(" ")[0] ?? "?",
+    time: assignmentLabel({
+      status: "working",
+      start: r.start_time,
+      end: r.end_time,
+      isClose: r.is_close,
+    }),
+  }));
+
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-6">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Schedules</h1>
-          <p className="text-muted-foreground text-sm">
-            Upcoming weeks open automatically. Build and publish when you’re ready.
+          <h1 className="text-[26px] font-bold tracking-tight">Schedules</h1>
+          <p className="text-muted-foreground text-[13.5px] leading-relaxed">
+            Weeks open automatically. Build the board as availability comes in,
+            then publish.
           </p>
         </div>
-        <div className="flex flex-col items-end gap-1">
+        <div className="flex flex-col items-end gap-1 whitespace-nowrap">
           <Link
             href="/admin/roster"
-            className="text-primary text-sm font-medium hover:underline"
+            className="text-primary text-sm font-semibold hover:underline"
           >
-            Manage roster →
+            Roster →
           </Link>
           <Link
             href="/admin/settings"
-            className="text-primary text-sm font-medium hover:underline"
+            className="text-primary text-sm font-semibold hover:underline"
           >
             Settings →
           </Link>
         </div>
       </div>
 
-      <Link
-        href="/today"
-        className="panel hover:border-primary/40 flex items-center justify-between gap-4 p-4 transition-colors"
-      >
-        <div>
-          <div className="text-muted-foreground text-xs font-medium uppercase">
-            Today
+      {/* Today strip */}
+      <div className="panel p-4">
+        <div className="section-label mb-2">Today · {todayChips.length} working</div>
+        {todayChips.length === 0 ? (
+          <div className="text-muted-foreground text-sm">
+            No one scheduled (current week not published).
           </div>
-          {todayShifts.length === 0 ? (
-            <div className="text-muted-foreground text-sm">
-              No one scheduled (current week not published).
-            </div>
-          ) : (
-            <div className="text-sm">
-              <span className="font-medium">{todayShifts.length} working</span>
-              <span className="text-muted-foreground">
-                {" — "}
-                {todayShifts
-                  .slice(0, 4)
-                  .map(
-                    (r) =>
-                      `${r.users?.name?.split(" ")[0]} ${assignmentLabel({
-                        status: "working",
-                        start: r.start_time,
-                        end: r.end_time,
-                        isClose: r.is_close,
-                      })}`,
-                  )
-                  .join(", ")}
-                {todayShifts.length > 4 ? "…" : ""}
-              </span>
-            </div>
-          )}
-        </div>
-        <span className="text-primary text-sm font-medium">See who’s on →</span>
-      </Link>
+        ) : (
+          <div className="flex gap-2 overflow-x-auto pb-0.5">
+            {todayChips.map((c, i) => (
+              <div
+                key={i}
+                className="bg-muted flex min-w-[78px] shrink-0 flex-col gap-0.5 rounded-xl px-2.5 py-2"
+              >
+                <span className="text-foreground text-[11.5px] font-semibold whitespace-nowrap">
+                  {c.name}
+                </span>
+                <span className="time text-primary text-[11px] whitespace-nowrap">
+                  {c.time}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
+      {/* Building now */}
       <section className="flex flex-col gap-3">
-        <h2 className="text-muted-foreground text-xs font-medium uppercase">
-          Building now
-        </h2>
+        <h2 className="section-label px-0.5">Building now</h2>
         {openWeeks.length === 0 ? (
           <p className="text-muted-foreground text-sm">No open weeks.</p>
         ) : (
-          <ul className="flex flex-col gap-3">
-            {openWeeks.map((w) => {
-              const submitted = submittedByWeek.get(w.id)?.size ?? 0;
-              return (
-                <li key={w.id}>
-                  <Link
-                    href={`/admin/weeks/${w.id}/board`}
-                    className="panel hover:border-primary/40 flex items-center gap-4 p-4 transition-colors"
-                  >
-                    <ProgressRing value={submitted} total={total} />
-                    <div className="flex flex-1 flex-col gap-1">
-                      <span className="font-medium">
-                        {formatWeekRange(w.start_date)}
-                      </span>
-                      <span className="text-muted-foreground text-sm">
-                        {submitted} of {total} submitted availability
-                      </span>
-                    </div>
-                    <StatusBadge status={w.status} />
-                    <span className="text-primary text-sm font-medium">
-                      Build →
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          openWeeks.map((w) => (
+            <WeekBoardCard
+              key={w.id}
+              weekId={w.id}
+              startDate={w.start_date}
+              variant="building"
+              submitted={submittedByWeek.get(w.id)?.size ?? 0}
+              total={total}
+            />
+          ))
         )}
       </section>
 
+      {/* Published */}
       {publishedWeeks.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-muted-foreground text-xs font-medium uppercase">
-            Published
-          </h2>
-          <ul className="flex flex-col gap-2">
-            {publishedWeeks.map((w) => (
-              <li key={w.id}>
-                <Link
-                  href={`/admin/weeks/${w.id}/board`}
-                  className="panel hover:border-primary/40 flex items-center justify-between px-4 py-3 transition-colors"
-                >
-                  <span className="font-medium">
-                    {formatWeekRange(w.start_date)}
-                  </span>
-                  <StatusBadge status={w.status} />
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <h2 className="section-label px-0.5">Published</h2>
+          {publishedWeeks.map((w) => (
+            <WeekBoardCard
+              key={w.id}
+              weekId={w.id}
+              startDate={w.start_date}
+              variant="published"
+            />
+          ))}
         </section>
       )}
     </div>
