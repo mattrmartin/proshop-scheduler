@@ -20,7 +20,7 @@ export default async function AvailabilityLayout({
         </span>
         <SignOutButton />
       </AppHeader>
-      <main className="mx-auto max-w-3xl p-6">{children}</main>
+      <main className="mx-auto max-w-[480px] p-4">{children}</main>
     </div>
   );
 }

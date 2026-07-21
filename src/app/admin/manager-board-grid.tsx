@@ -25,10 +25,13 @@ export function ManagerBoardGrid({
   board,
   interactive,
   onChanged,
+  highlightUserId,
 }: {
   board: BoardData;
   interactive: boolean;
   onChanged?: () => void;
+  /** Read-only staff view: tint this person's row (their own row). */
+  highlightUserId?: string;
 }) {
   const [selected, setSelected] = useState<{
     userId: string;
@@ -76,6 +79,7 @@ export function ManagerBoardGrid({
             cells={board.cells}
             interactive={interactive}
             selected={selected}
+            highlightUserId={highlightUserId}
             onSelect={(userId, date) => setSelected({ userId, date })}
           />
         ))}
@@ -108,6 +112,7 @@ function GroupBlock({
   cells,
   interactive,
   selected,
+  highlightUserId,
   onSelect,
 }: {
   label: string;
@@ -116,6 +121,7 @@ function GroupBlock({
   cells: Record<string, CellData>;
   interactive: boolean;
   selected: { userId: string; date: string } | null;
+  highlightUserId?: string;
   onSelect: (userId: string, date: string) => void;
 }) {
   return (
@@ -123,26 +129,35 @@ function GroupBlock({
       <div className="text-muted-foreground bg-card col-span-full px-2.5 pt-2 pb-1 text-[9.5px] font-bold tracking-[0.06em] uppercase">
         {label}
       </div>
-      {staff.map((u) => (
-        <div key={u.id} className="contents">
-          <div className="bg-card text-foreground border-border/70 sticky left-0 z-10 truncate border-b px-2.5 py-2.5 text-[12.5px] font-semibold">
-            {u.name}
+      {staff.map((u) => {
+        const isMe = u.id === highlightUserId;
+        return (
+          <div key={u.id} className="contents">
+            <div
+              className={`border-border/70 sticky left-0 z-10 truncate border-b px-2.5 py-2.5 text-[12.5px] font-semibold ${
+                isMe ? "bg-accent text-accent-foreground" : "bg-card text-foreground"
+              }`}
+            >
+              {u.name}
+              {isMe && <span className="ml-1 text-[10px] font-normal">(you)</span>}
+            </div>
+            {days.map((d) => {
+              const cell = cells[`${u.id}|${d.date}`];
+              const isSel = selected?.userId === u.id && selected?.date === d.date;
+              return (
+                <BoardCell
+                  key={d.date}
+                  cell={cell}
+                  interactive={interactive}
+                  selected={isSel}
+                  highlighted={isMe}
+                  onClick={() => onSelect(u.id, d.date)}
+                />
+              );
+            })}
           </div>
-          {days.map((d) => {
-            const cell = cells[`${u.id}|${d.date}`];
-            const isSel = selected?.userId === u.id && selected?.date === d.date;
-            return (
-              <BoardCell
-                key={d.date}
-                cell={cell}
-                interactive={interactive}
-                selected={isSel}
-                onClick={() => onSelect(u.id, d.date)}
-              />
-            );
-          })}
-        </div>
-      ))}
+        );
+      })}
     </>
   );
 }
@@ -151,11 +166,13 @@ function BoardCell({
   cell,
   interactive,
   selected,
+  highlighted,
   onClick,
 }: {
   cell: CellData | undefined;
   interactive: boolean;
   selected: boolean;
+  highlighted?: boolean;
   onClick: () => void;
 }) {
   const a = cell?.assignment;
@@ -176,7 +193,11 @@ function BoardCell({
 
   const base =
     "border-border/70 flex min-h-[42px] items-center justify-center border-b border-l px-0.5 py-1";
-  const tint = wantOff ? "bg-warning-surface/50" : "";
+  const tint = wantOff
+    ? "bg-warning-surface/50"
+    : highlighted
+      ? "bg-accent/40"
+      : "";
   const sel = selected ? "ring-primary ring-2 ring-inset" : "";
 
   if (!interactive) {

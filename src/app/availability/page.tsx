@@ -1,9 +1,18 @@
-import Link from "next/link";
-
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAppUser } from "@/lib/auth";
-import { formatWeekRange } from "@/lib/dates";
 import { assignmentLabel } from "@/lib/schedule-format";
+import { AvailabilityWeekCard } from "./availability-week-card";
+import { ScheduleWeekCard } from "./schedule-week-card";
+
+function longDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
 
 function shiftDate(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
@@ -15,7 +24,14 @@ function shiftDate(iso: string): string {
   });
 }
 
-type Shift = {
+type TodayRow = {
+  user_id: string;
+  start_time: string | null;
+  end_time: string | null;
+  is_close: boolean;
+  users: { name: string } | null;
+};
+type MyShift = {
   date: string;
   start_time: string | null;
   end_time: string | null;
@@ -30,94 +46,128 @@ export default async function StaffHomePage() {
   const { data: todayVal } = await supabase.rpc("app_today");
   const todayIso = todayVal as unknown as string;
 
-  // Upcoming published shifts for this user.
-  let shifts: Shift[] = [];
+  // Everyone working today (published) — powers the hero count + coworker chips.
+  const { data: todayData, error: todayErr } = await supabase
+    .from("assignments")
+    .select("user_id, start_time, end_time, is_close, users!inner(name), weeks!inner(status)")
+    .eq("date", todayIso)
+    .eq("status", "working")
+    .eq("weeks.status", "published");
+  if (todayErr) throw todayErr;
+  const todayRows = (todayData ?? []) as unknown as TodayRow[];
+
+  const myToday = user ? todayRows.find((r) => r.user_id === user.id) : undefined;
+  const myShiftToday = myToday
+    ? assignmentLabel({
+        status: "working",
+        start: myToday.start_time,
+        end: myToday.end_time,
+        isClose: myToday.is_close,
+      })
+    : null;
+  const coworkers = todayRows
+    .filter((r) => r.user_id !== user?.id)
+    .map((r) => ({
+      name: r.users?.name?.split(" ")[0] ?? "?",
+      time: assignmentLabel({
+        status: "working",
+        start: r.start_time,
+        end: r.end_time,
+        isClose: r.is_close,
+      }),
+    }));
+
+  // My upcoming shifts (future published days).
+  let upcoming: MyShift[] = [];
   if (user) {
     const { data, error } = await supabase
       .from("assignments")
       .select("date, start_time, end_time, is_close, weeks!inner(status)")
       .eq("user_id", user.id)
       .eq("status", "working")
-      .gte("date", todayIso)
+      .gt("date", todayIso)
       .eq("weeks.status", "published")
       .order("date", { ascending: true });
     if (error) throw error; // surface, don't swallow
-    shifts = (data ?? []) as unknown as Shift[];
+    upcoming = (data ?? []) as unknown as MyShift[];
   }
 
-  // Weeks still accepting availability + whether this user answered.
-  const { data: weeks, error: weeksErr } = await supabase
-    .from("weeks")
-    .select("id, start_date")
-    .eq("status", "open")
-    .order("start_date", { ascending: true });
-  if (weeksErr) throw weeksErr;
+  // Weeks accepting availability + whether this user answered.
+  const [{ data: openWeeks, error: openErr }, { data: pubWeeks, error: pubErr }] =
+    await Promise.all([
+      supabase
+        .from("weeks")
+        .select("id, start_date")
+        .eq("status", "open")
+        .order("start_date", { ascending: true }),
+      supabase
+        .from("weeks")
+        .select("id, start_date")
+        .eq("status", "published")
+        .order("start_date", { ascending: false }),
+    ]);
+  if (openErr) throw openErr;
+  if (pubErr) throw pubErr;
 
   const submitted = new Set<string>();
-  if (user && weeks?.length) {
+  if (user && openWeeks?.length) {
     const { data: mine, error: mineErr } = await supabase
       .from("availability")
       .select("week_id")
       .eq("user_id", user.id)
-      .in(
-        "week_id",
-        weeks.map((w) => w.id),
-      );
+      .in("week_id", openWeeks.map((w) => w.id));
     if (mineErr) throw mineErr;
     for (const r of mine ?? []) submitted.add(r.week_id);
   }
 
-  const [next, ...rest] = shifts;
-
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">
-          Hi{user ? `, ${user.name.split(" ")[0]}` : ""}
-        </h1>
-        <div className="mt-1 flex gap-4 text-sm font-medium">
-          <Link href="/today" className="text-primary hover:underline">
-            Today →
-          </Link>
-          <Link href="/board" className="text-primary hover:underline">
-            Full schedule →
-          </Link>
+    <div className="flex flex-col gap-6">
+      <h1 className="text-[26px] font-bold tracking-tight">
+        Hi{user ? `, ${user.name.split(" ")[0]}` : ""}
+      </h1>
+
+      {/* Today hero */}
+      <div className="bg-foreground text-background rounded-[20px] p-5">
+        <div className="mb-2 text-[10px] font-bold tracking-[0.08em] text-white/70 uppercase">
+          Today · {longDate(todayIso)}
         </div>
+        <div className="time mb-1 text-[30px] font-semibold tracking-tight">
+          {myShiftToday ?? "Not scheduled"}
+        </div>
+        <div className="mb-3.5 text-[13px] text-white/70">
+          {todayRows.length} working today
+        </div>
+        {coworkers.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto">
+            {coworkers.map((c, i) => (
+              <div
+                key={i}
+                className="shrink-0 rounded-xl bg-white/10 px-2.5 py-2"
+              >
+                <div className="text-[11.5px] font-semibold whitespace-nowrap">
+                  {c.name}
+                </div>
+                <div className="time text-[10.5px] whitespace-nowrap text-white/70">
+                  {c.time}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-muted-foreground text-xs font-medium uppercase">
-          Your shifts
-        </h2>
-        {!next ? (
-          <p className="text-muted-foreground text-sm">
-            No upcoming shifts posted yet.
-          </p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            <div className="panel border-primary/40 flex items-center justify-between p-4">
-              <div>
-                <div className="text-muted-foreground text-xs font-medium uppercase">
-                  Next shift
-                </div>
-                <div className="font-medium">{shiftDate(next.date)}</div>
-              </div>
-              <span className="text-primary text-lg font-semibold">
-                {assignmentLabel({
-                  status: "working",
-                  start: next.start_time,
-                  end: next.end_time,
-                  isClose: next.is_close,
-                })}
-              </span>
-            </div>
-            {rest.map((s) => (
+      {/* Upcoming shifts */}
+      {upcoming.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <h2 className="section-label px-0.5">Upcoming shifts</h2>
+          <div className="panel overflow-hidden">
+            {upcoming.map((s) => (
               <div
                 key={s.date}
-                className="panel flex items-center justify-between px-4 py-3"
+                className="border-border/60 flex items-center justify-between border-b px-4 py-3 last:border-b-0"
               >
-                <span className="font-medium">{shiftDate(s.date)}</span>
-                <span className="text-primary font-medium">
+                <span className="text-[14px] font-semibold">{shiftDate(s.date)}</span>
+                <span className="time text-primary text-[14px] font-medium">
                   {assignmentLabel({
                     status: "working",
                     start: s.start_time,
@@ -128,46 +178,43 @@ export default async function StaffHomePage() {
               </div>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* Availability */}
+      <section className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between px-0.5">
+          <h2 className="section-label">Availability</h2>
+          <span className="text-muted-foreground text-[11.5px]">Submit by Thu noon</span>
+        </div>
+        {!openWeeks?.length ? (
+          <p className="text-muted-foreground text-sm">Nothing to submit right now.</p>
+        ) : (
+          openWeeks.map((w) => (
+            <AvailabilityWeekCard
+              key={w.id}
+              weekId={w.id}
+              startDate={w.start_date}
+              submitted={submitted.has(w.id)}
+            />
+          ))
         )}
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-muted-foreground text-xs font-medium uppercase">
-          Submit availability
-        </h2>
-        {!weeks?.length ? (
-          <p className="text-muted-foreground text-sm">
-            Nothing to submit right now.
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {weeks.map((w) => {
-              const done = submitted.has(w.id);
-              return (
-                <li key={w.id}>
-                  <Link
-                    href={`/availability/${w.id}`}
-                    className="panel hover:border-primary/40 flex items-center justify-between px-4 py-3 transition-colors"
-                  >
-                    <span className="font-medium">
-                      {formatWeekRange(w.start_date)}
-                    </span>
-                    {done ? (
-                      <span className="badge bg-primary/12 text-primary">
-                        ✓ Submitted
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">
-                        Tap to fill →
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+      {/* Schedule */}
+      {user && (pubWeeks?.length ?? 0) > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="section-label px-0.5">Schedule</h2>
+          {pubWeeks!.map((w) => (
+            <ScheduleWeekCard
+              key={w.id}
+              weekId={w.id}
+              startDate={w.start_date}
+              currentUserId={user.id}
+            />
+          ))}
+        </section>
+      )}
     </div>
   );
 }

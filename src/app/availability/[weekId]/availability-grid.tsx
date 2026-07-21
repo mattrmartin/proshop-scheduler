@@ -26,10 +26,12 @@ export function AvailabilityGrid({
   weekId,
   hours,
   days,
+  onSaved,
 }: {
   weekId: string;
   hours: number[];
   days: GridDay[];
+  onSaved?: () => void;
 }) {
   const [sel, setSel] = useState<Record<string, Set<number>>>(() =>
     Object.fromEntries(days.map((d) => [d.date, new Set(d.selected)])),
@@ -39,6 +41,10 @@ export function AvailabilityGrid({
   );
   const drag = useRef<{ mode: "fill" | "erase" } | null>(null);
   const [state, action, pending] = useActionState(saveAvailability, initialState);
+
+  useEffect(() => {
+    if (state.ok) onSaved?.();
+  }, [state.ok, onSaved]);
 
   const isActive = (date: string, hour: number) => {
     const day = days.find((d) => d.date === date);
