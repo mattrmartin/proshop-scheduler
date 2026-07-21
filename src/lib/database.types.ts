@@ -168,6 +168,7 @@ export type Database = {
           auth_user_id: string | null
           created_at: string
           department: string
+          email: string | null
           id: string
           name: string
           phone: string
@@ -178,6 +179,7 @@ export type Database = {
           auth_user_id?: string | null
           created_at?: string
           department?: string
+          email?: string | null
           id?: string
           name: string
           phone: string
@@ -188,6 +190,7 @@ export type Database = {
           auth_user_id?: string | null
           created_at?: string
           department?: string
+          email?: string | null
           id?: string
           name?: string
           phone?: string
@@ -227,6 +230,10 @@ export type Database = {
     Functions: {
       app_today: { Args: Record<PropertyKey, never>; Returns: string }
       ensure_open_weeks: { Args: Record<PropertyKey, never>; Returns: undefined }
+      link_current_auth_user: {
+        Args: Record<PropertyKey, never>
+        Returns: string | null
+      }
     }
     Enums: {
       [_ in never]: never

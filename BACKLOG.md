@@ -12,12 +12,23 @@ Ordered. Top unblocked item first. Keep current: remove done, add deferred.
 ## Auth — finish before real launch
 DECISION (owner): go **free** — drop phone/SMS auth. Use **email magic link**
 (Supabase built-in, passwordless, no Twilio, no 10DLC). Unblocks launch now.
-- [ ] **Email magic-link auth**: Supabase dashboard → Auth → Email provider, enable
-      magic link; configure Site URL + redirect (https://proshop-scheduler.vercel.app
-      /auth/callback). Build the callback route + a "send magic link" login form.
-      Seed real emails on the roster (users.email — add column? currently only phone).
-      NOTE: staff `users` rows key off phone today; magic link keys off email, so add
-      an email field to users and link auth_user_id by email on first sign-in.
+- [~] **Email magic-link auth** — CODE DONE + deployed (migration file, callback
+      route, magic-link login form, `users.email` + `link_current_auth_user()` RPC).
+      **Blocked on apply** (Supabase MCP needs OAuth approval — no CLI/service-role
+      fallback in repo). Remaining steps, in order:
+      1. Authorize MCP: `claude` → `/mcp` → supabase (ref `zrdssdrxglwqgrtlslul`).
+      2. `apply_migration` 20260720000005_user_email_magiclink.sql (adds email col,
+         partial unique index, RPC, seeds Cole.email=mattrobm@gmail.com).
+         Assumes ONE admin row (Cole) — verify before running.
+      3. Converge Cole identity so demo button + magic link = one auth user:
+         `update auth.users set email='mattrobm@gmail.com',
+          email_confirmed_at=coalesce(email_confirmed_at,now())
+          where email='mattrobm+cole@gmail.com';`
+         Then flip DEMO_ACCOUNTS[0].email → mattrobm@gmail.com in login page + push.
+      4. Dashboard → Auth → URL Config: Site URL https://proshop-scheduler.vercel.app;
+         redirects: .../auth/callback + http://localhost:3000/auth/callback.
+      5. Test: magic link to mattrobm@gmail.com → lands as Cole; demo buttons OK.
+      Real roster email collection (roster UI field / intake) = separate follow-up.
 - [ ] **Remove the dev/demo bypass** once real auth is live: the "View as Cole/Morgan
       (demo)" buttons + DEMO_ACCOUNTS in [src/app/login/page.tsx]. Also the seeded dev
       users (mattrobm+cole@gmail.com / +morgan) with placeholder phones.
