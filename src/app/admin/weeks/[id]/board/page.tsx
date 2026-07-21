@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatWeekRange, weekDates, formatDayShort } from "@/lib/dates";
 import { BuildBoard, type BoardDay, type BoardUser, type CellData } from "./board";
+import { PublishControls } from "./publish-controls";
 
 type StoredHours = Record<string, { open: string; close: string }>;
 type Range = { start: string; end: string };
@@ -103,27 +104,39 @@ export default async function BoardPage({
     }
   }
 
+  const shiftCount = (assignments ?? []).filter(
+    (a) => a.status === "working",
+  ).length;
+
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <Link
-          href={`/admin/weeks/${week.id}`}
-          className="text-muted-foreground text-sm hover:underline"
-        >
-          ← Week settings
-        </Link>
-        <h1 className="mt-1 text-xl font-semibold">
-          Build board — {formatWeekRange(week.start_date)}
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Click a cell to assign a shift. Availability is a guide, not a limit.
-        </p>
-        <Link
-          href={`/board/${week.id}`}
-          className="text-primary mt-1 inline-block text-sm font-medium hover:underline"
-        >
-          Preview shared board →
-        </Link>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <Link
+            href={`/admin/weeks/${week.id}`}
+            className="text-muted-foreground text-sm hover:underline"
+          >
+            ← Week settings
+          </Link>
+          <h1 className="mt-1 text-xl font-semibold tracking-tight">
+            Build board — {formatWeekRange(week.start_date)}
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Click a cell to assign a shift. {shiftCount} shift
+            {shiftCount === 1 ? "" : "s"} assigned.
+          </p>
+          <Link
+            href={`/board/${week.id}`}
+            className="text-primary mt-1 inline-block text-sm font-medium hover:underline"
+          >
+            Preview shared board →
+          </Link>
+        </div>
+        <PublishControls
+          weekId={week.id}
+          status={week.status}
+          shiftCount={shiftCount}
+        />
       </div>
 
       <BuildBoard

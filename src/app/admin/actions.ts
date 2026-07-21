@@ -60,4 +60,6 @@ export async function setWeekStatus(formData: FormData): Promise<void> {
   if (error) throw error; // surface, don't swallow
 
   revalidatePath("/admin");
+  revalidatePath(`/admin/weeks/${id}`);
+  revalidatePath(`/admin/weeks/${id}/board`);
 }

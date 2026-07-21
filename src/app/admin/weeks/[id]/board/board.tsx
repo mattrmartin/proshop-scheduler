@@ -227,8 +227,15 @@ function CellEditor({
     av && !av.wantOff && av.ranges.length > 0
       ? { start: av.ranges[0].start, end: av.ranges[av.ranges.length - 1].end }
       : null;
-  const defaultStart = a?.start ?? availWindow?.start ?? "";
-  const defaultEnd = a?.end ?? availWindow?.end ?? "";
+  const [start, setStart] = useState(a?.start ?? availWindow?.start ?? "");
+  const [end, setEnd] = useState(a?.end ?? availWindow?.end ?? "");
+  const [close, setClose] = useState(a?.isClose ?? false);
+
+  const applyPreset = (s: string, e: string, c: boolean) => {
+    setStart(s);
+    setEnd(c ? "" : e);
+    setClose(c);
+  };
 
   useEffect(() => {
     if (state.ok) onClose();
@@ -261,7 +268,8 @@ function CellEditor({
         <input
           type="time"
           name="start_time"
-          defaultValue={defaultStart}
+          value={start}
+          onChange={(e) => setStart(e.target.value)}
           className="border-input bg-background rounded-md border px-2 py-1 text-sm"
         />
       </label>
@@ -270,14 +278,41 @@ function CellEditor({
         <input
           type="time"
           name="end_time"
-          defaultValue={defaultEnd}
-          className="border-input bg-background rounded-md border px-2 py-1 text-sm"
+          value={end}
+          disabled={close}
+          onChange={(e) => setEnd(e.target.value)}
+          className="border-input bg-background rounded-md border px-2 py-1 text-sm disabled:opacity-40"
         />
       </label>
       <label className="flex items-center gap-1 text-sm">
-        <input type="checkbox" name="is_close" defaultChecked={a?.isClose} />
+        <input
+          type="checkbox"
+          name="is_close"
+          checked={close}
+          onChange={(e) => setClose(e.target.checked)}
+        />
         Close (C)
       </label>
+
+      <div className="flex w-full flex-wrap gap-1.5">
+        <span className="text-muted-foreground self-center text-xs">Quick:</span>
+        {[
+          { label: "6–2", s: "06:00", e: "14:00", c: false },
+          { label: "6–C", s: "06:00", e: "", c: true },
+          { label: "9–5", s: "09:00", e: "17:00", c: false },
+          { label: "12–C", s: "12:00", e: "", c: true },
+        ].map((p) => (
+          <Button
+            key={p.label}
+            type="button"
+            size="xs"
+            variant="secondary"
+            onClick={() => applyPreset(p.s, p.e, p.c)}
+          >
+            {p.label}
+          </Button>
+        ))}
+      </div>
 
       <Button type="submit" name="mode" value="working" disabled={pending}>
         Save shift
