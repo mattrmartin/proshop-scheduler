@@ -225,6 +225,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      app_today: { Args: Record<PropertyKey, never>; Returns: string }
       ensure_open_weeks: { Args: Record<PropertyKey, never>; Returns: undefined }
     }
     Enums: {

@@ -2,14 +2,33 @@ import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/server";
 import { formatWeekRange } from "@/lib/dates";
+import { assignmentLabel } from "@/lib/schedule-format";
 import { StatusBadge } from "@/components/status-badge";
 import { ProgressRing } from "@/components/progress-ring";
+
+type TodayRow = {
+  start_time: string | null;
+  end_time: string | null;
+  is_close: boolean;
+  users: { name: string } | null;
+};
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
   // Keep the rolling window of upcoming open weeks materialised.
   await supabase.rpc("ensure_open_weeks");
+
+  const { data: todayVal } = await supabase.rpc("app_today");
+  const todayIso = todayVal as unknown as string;
+  const { data: todayData, error: todayErr } = await supabase
+    .from("assignments")
+    .select("start_time, end_time, is_close, users!inner(name), weeks!inner(status)")
+    .eq("date", todayIso)
+    .eq("status", "working")
+    .eq("weeks.status", "published");
+  if (todayErr) throw todayErr;
+  const todayShifts = (todayData ?? []) as unknown as TodayRow[];
 
   const [
     { data: weeks, error },
@@ -74,6 +93,43 @@ export default async function AdminDashboardPage() {
           </Link>
         </div>
       </div>
+
+      <Link
+        href="/today"
+        className="panel hover:border-primary/40 flex items-center justify-between gap-4 p-4 transition-colors"
+      >
+        <div>
+          <div className="text-muted-foreground text-xs font-medium uppercase">
+            Today
+          </div>
+          {todayShifts.length === 0 ? (
+            <div className="text-muted-foreground text-sm">
+              No one scheduled (current week not published).
+            </div>
+          ) : (
+            <div className="text-sm">
+              <span className="font-medium">{todayShifts.length} working</span>
+              <span className="text-muted-foreground">
+                {" — "}
+                {todayShifts
+                  .slice(0, 4)
+                  .map(
+                    (r) =>
+                      `${r.users?.name?.split(" ")[0]} ${assignmentLabel({
+                        status: "working",
+                        start: r.start_time,
+                        end: r.end_time,
+                        isClose: r.is_close,
+                      })}`,
+                  )
+                  .join(", ")}
+                {todayShifts.length > 4 ? "…" : ""}
+              </span>
+            </div>
+          )}
+        </div>
+        <span className="text-primary text-sm font-medium">See who’s on →</span>
+      </Link>
 
       <section className="flex flex-col gap-3">
         <h2 className="text-muted-foreground text-xs font-medium uppercase">
