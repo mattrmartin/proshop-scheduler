@@ -108,16 +108,15 @@ export function WeekBoardCard({
                   </div>
                 </div>
               )}
-              <ManagerBoardGrid
-                board={board}
-                interactive={variant === "building"}
-                onChanged={load}
-              />
               {variant === "published" && (
-                <div className="flex justify-end px-4 py-3">
+                <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-1">
+                  <span className="text-muted-foreground text-xs">
+                    Tap a shift to edit — changes go live.
+                  </span>
                   <UnpublishButton weekId={weekId} onDone={() => router.refresh()} />
                 </div>
               )}
+              <ManagerBoardGrid board={board} interactive onChanged={load} />
             </>
           )}
         </div>
