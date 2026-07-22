@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -76,12 +77,15 @@ export default function LoginPage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center gap-6 p-6">
       <div className="flex flex-col items-center gap-3 text-center">
-        <span
+        <Image
+          src="/hlcc_steel_logo.png"
+          alt=""
           aria-hidden
-          className="bg-primary text-primary-foreground flex size-12 items-center justify-center rounded-2xl text-2xl shadow-sm"
-        >
-          ⛳
-        </span>
+          width={64}
+          height={64}
+          className="size-16 object-contain"
+          priority
+        />
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
             Pro Shop Scheduler

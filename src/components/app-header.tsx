@@ -1,15 +1,19 @@
+import Image from "next/image";
 import Link from "next/link";
 
-/** Brand wordmark + green flag tile. */
+/** Brand wordmark + medallion logo. */
 export function BrandMark() {
   return (
     <Link href="/" className="flex items-center gap-2">
-      <span
+      <Image
+        src="/hlcc_steel_logo.png"
+        alt=""
         aria-hidden
-        className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-lg text-sm shadow-sm"
-      >
-        ⛳
-      </span>
+        width={32}
+        height={32}
+        className="size-8 object-contain"
+        priority
+      />
       <span className="font-semibold tracking-tight">Pro Shop Scheduler</span>
     </Link>
   );
