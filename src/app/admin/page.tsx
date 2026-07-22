@@ -1,7 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentAppUser } from "@/lib/auth";
 import { assignmentLabel } from "@/lib/schedule-format";
+import { weekDates } from "@/lib/dates";
 import { WeekBoardCard } from "./week-board-card";
 import { AdminMenu } from "./admin-menu";
+import { ManagerTodayCard } from "./manager-today-card";
 
 type TodayRow = {
   start_time: string | null;
@@ -66,6 +69,15 @@ export default async function AdminDashboardPage() {
 
   const total = staffCount ?? 0;
 
+  const user = await getCurrentAppUser();
+  const firstName = user?.name.split(" ")[0] ?? "there";
+
+  // Day-pager upper bound: the last day of the most recent published week.
+  const latestPublished = publishedWeeks[0]; // most recent first
+  const maxDateIso = latestPublished
+    ? weekDates(latestPublished.start_date)[6]
+    : todayIso;
+
   const todayChips = todayShifts.map((r) => ({
     name: r.users?.name?.split(" ")[0] ?? "?",
     time: assignmentLabel({
@@ -79,41 +91,15 @@ export default async function AdminDashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-[26px] font-bold tracking-tight">Schedules</h1>
-          <p className="text-muted-foreground text-[13.5px] leading-relaxed">
-            Weeks open automatically. Build the board as availability comes in,
-            then publish.
-          </p>
-        </div>
+        <h1 className="text-[26px] font-bold tracking-tight">Hi, {firstName}</h1>
         <AdminMenu />
       </div>
 
-      {/* Today strip */}
-      <div className="panel p-4">
-        <div className="section-label mb-2">Today · {todayChips.length} working</div>
-        {todayChips.length === 0 ? (
-          <div className="text-muted-foreground text-sm">
-            No one scheduled (current week not published).
-          </div>
-        ) : (
-          <div className="flex gap-2 overflow-x-auto pb-0.5">
-            {todayChips.map((c, i) => (
-              <div
-                key={i}
-                className="bg-muted flex min-w-[78px] shrink-0 flex-col gap-0.5 rounded-xl px-2.5 py-2"
-              >
-                <span className="text-foreground text-[11.5px] font-semibold whitespace-nowrap">
-                  {c.name}
-                </span>
-                <span className="time text-primary text-[11px] whitespace-nowrap">
-                  {c.time}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <ManagerTodayCard
+        todayIso={todayIso}
+        maxDateIso={maxDateIso}
+        initialChips={todayChips}
+      />
 
       {/* Building now */}
       <section className="flex flex-col gap-3">
