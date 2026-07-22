@@ -7,7 +7,7 @@ import { formatWeekRange } from "@/lib/dates";
 import { ProgressRing } from "@/components/progress-ring";
 import { StatusBadge } from "@/components/status-badge";
 import type { BoardData } from "@/lib/board-data";
-import { loadWeekBoard } from "./board-actions";
+import { loadWeekBoard, autoDraftWeek } from "./board-actions";
 import { setWeekStatus } from "./actions";
 import { ManagerBoardGrid } from "./manager-board-grid";
 
@@ -28,6 +28,7 @@ export function WeekBoardCard({
   const [expanded, setExpanded] = useState(false);
   const [board, setBoard] = useState<BoardData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [drafting, setDrafting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -35,6 +36,20 @@ export function WeekBoardCard({
     setBoard(data);
     setLoading(false);
   }, [weekId]);
+
+  async function autoDraft() {
+    if (
+      !confirm(
+        "Draft shifts for everyone with availability? Fills empty cells only — it won't change what you've already placed. You can trim afterward.",
+      )
+    ) {
+      return;
+    }
+    setDrafting(true);
+    await autoDraftWeek(weekId);
+    await load();
+    setDrafting(false);
+  }
 
   async function toggle() {
     const next = !expanded;
@@ -76,11 +91,21 @@ export function WeekBoardCard({
           {board && (
             <>
               {variant === "building" && (
-                <div className="flex items-center justify-between px-4 pt-3 pb-1">
+                <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-1">
                   <span className="text-muted-foreground text-xs">
                     {board.shiftCount} shift{board.shiftCount === 1 ? "" : "s"} assigned
                   </span>
-                  <PublishButton weekId={weekId} shiftCount={board.shiftCount} />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={autoDraft}
+                      disabled={drafting}
+                      className="border-border text-foreground hover:bg-muted cursor-pointer rounded-[10px] border px-3 py-2 text-[13px] font-semibold disabled:opacity-50"
+                    >
+                      {drafting ? "Drafting…" : "Auto-draft"}
+                    </button>
+                    <PublishButton weekId={weekId} shiftCount={board.shiftCount} />
+                  </div>
                 </div>
               )}
               <ManagerBoardGrid

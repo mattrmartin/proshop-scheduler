@@ -1,8 +1,11 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAppUser } from "@/lib/auth";
 import { assignmentLabel } from "@/lib/schedule-format";
+import { draftWindow } from "@/lib/auto-draft";
 import { loadBoardData, type BoardData } from "@/lib/board-data";
 
 /**
@@ -60,4 +63,64 @@ export async function loadDayRoster(dateIso: string): Promise<DayChip[]> {
         isClose: r.is_close,
       }),
     }));
+}
+
+/**
+ * Auto-draft: fill each empty cell where the person submitted availability with
+ * a working shift = their availability window (clamped to business hours). Only
+ * open weeks; only empty cells (never clobbers a manual assignment); skips
+ * want-off and no-response. It's a draft — Cole reviews and trims. Admin-only.
+ * Returns how many shifts were drafted.
+ */
+export async function autoDraftWeek(
+  weekId: string,
+): Promise<{ drafted: number }> {
+  const user = await getCurrentAppUser();
+  if (!user || user.role !== "admin") return { drafted: 0 };
+
+  const supabase = await createClient();
+  const board = await loadBoardData(supabase, weekId);
+  if (!board || board.status !== "open") return { drafted: 0 };
+
+  const rows = [] as {
+    week_id: string;
+    user_id: string;
+    date: string;
+    status: string;
+    start_time: string;
+    end_time: string;
+    is_close: boolean;
+  }[];
+
+  for (const day of board.days) {
+    if (!day.hours) continue; // closed day — nothing to staff
+    for (const u of board.users) {
+      const cell = board.cells[`${u.id}|${day.date}`];
+      if (!cell || cell.assignment) continue; // fill empties only
+      const av = cell.avail;
+      if (!av || av.wantOff || av.ranges.length === 0) continue; // off / no response
+      const win = draftWindow(av.ranges, day.hours);
+      if (!win) continue;
+      rows.push({
+        week_id: weekId,
+        user_id: u.id,
+        date: day.date,
+        status: "working",
+        start_time: win.start,
+        end_time: win.end,
+        is_close: false,
+      });
+    }
+  }
+
+  if (rows.length > 0) {
+    const { error } = await supabase
+      .from("assignments")
+      .upsert(rows, { onConflict: "week_id,user_id,date" });
+    if (error) throw error; // surface, don't swallow
+  }
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/weeks/${weekId}/board`);
+  return { drafted: rows.length };
 }
