@@ -14,9 +14,25 @@ const plexMono = IBM_Plex_Mono({
   weight: ["500", "600"],
 });
 
+const DESCRIPTION =
+  "Staff shift scheduling for the Hayden Lake Country Club pro shop.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://proshop-scheduler.vercel.app"),
   title: "Pro Shop Scheduler",
-  description: "Staff shift scheduling for the Hayden Lake pro shop.",
+  description: DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: "Pro Shop Scheduler",
+    title: "Pro Shop Scheduler",
+    description: DESCRIPTION,
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pro Shop Scheduler",
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({
