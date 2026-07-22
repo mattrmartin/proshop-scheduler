@@ -1,9 +1,7 @@
-import Link from "next/link";
-
 import { createClient } from "@/lib/supabase/server";
 import { assignmentLabel } from "@/lib/schedule-format";
 import { WeekBoardCard } from "./week-board-card";
-import { RosterDrawer } from "./roster-drawer";
+import { AdminMenu } from "./admin-menu";
 
 type TodayRow = {
   start_time: string | null;
@@ -88,15 +86,7 @@ export default async function AdminDashboardPage() {
             then publish.
           </p>
         </div>
-        <div className="flex flex-col items-end gap-1 whitespace-nowrap">
-          <RosterDrawer />
-          <Link
-            href="/admin/settings"
-            className="text-primary text-sm font-semibold hover:underline"
-          >
-            Settings →
-          </Link>
-        </div>
+        <AdminMenu />
       </div>
 
       {/* Today strip */}

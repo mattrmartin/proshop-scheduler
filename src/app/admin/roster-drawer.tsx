@@ -14,8 +14,13 @@ const initial: RosterState = {};
 const fieldCls =
   "border-input bg-card rounded-lg border px-2.5 py-2 text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
-export function RosterDrawer() {
-  const [open, setOpen] = useState(false);
+export function RosterDrawer({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
   const [roster, setRoster] = useState<{
     inside: RosterPerson[];
     outside: RosterPerson[];
@@ -28,10 +33,9 @@ export function RosterDrawer() {
     setRoster(await loadRoster());
   }, []);
 
-  function openDrawer() {
-    setOpen(true);
-    if (!roster) void load();
-  }
+  useEffect(() => {
+    if (open && !roster) void load();
+  }, [open, roster, load]);
 
   const onSaved = () => {
     setAddOpen(false);
@@ -44,30 +48,19 @@ export function RosterDrawer() {
     outsideExpanded || outside.length <= 6 ? outside : outside.slice(0, 6);
   const hiddenCount = Math.max(0, outside.length - 6);
 
+  if (!open) return null;
+
   return (
     <>
-      <button
-        type="button"
-        onClick={openDrawer}
-        className="text-primary text-sm font-semibold hover:underline"
-      >
-        Roster →
-      </button>
-
-      {open && (
-        <>
-          <div
-            onClick={() => setOpen(false)}
-            className="fixed inset-0 z-40 bg-black/40"
-          />
-          <div className="bg-card fixed inset-y-0 right-0 z-50 w-[min(380px,92vw)] overflow-y-auto p-5 shadow-[-16px_0_40px_rgba(0,0,0,.14)]">
-            <div className="mb-1 flex items-center justify-between">
-              <h2 className="text-[19px] font-bold tracking-tight">Roster</h2>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="text-muted-foreground cursor-pointer text-xl leading-none"
-              >
+      <div onClick={onClose} className="fixed inset-0 z-40 bg-black/40" />
+      <div className="bg-card fixed inset-y-0 right-0 z-50 w-[min(380px,92vw)] overflow-y-auto p-5 shadow-[-16px_0_40px_rgba(0,0,0,.14)]">
+        <div className="mb-1 flex items-center justify-between">
+          <h2 className="text-[19px] font-bold tracking-tight">Roster</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-muted-foreground cursor-pointer text-xl leading-none"
+          >
                 ×
               </button>
             </div>
@@ -119,8 +112,6 @@ export function RosterDrawer() {
               </>
             )}
           </div>
-        </>
-      )}
     </>
   );
 }
