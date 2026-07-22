@@ -11,6 +11,7 @@ import {
 import { AddEventForm } from "./add-event-form";
 import { deleteEvent } from "./actions";
 import { StatusBadge } from "@/components/status-badge";
+import { ResponsesTabs } from "./responses-tabs";
 
 type StoredHours = Record<string, { open: string; close: string }>;
 
@@ -78,22 +79,22 @@ export default async function WeekDetailPage({
           ← All weeks
         </Link>
         <div className="mt-1 flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight">
             {formatWeekRange(week.start_date)}
           </h1>
           <StatusBadge status={week.status} />
         </div>
         <Link
           href={`/admin/weeks/${week.id}/board`}
-          className="text-primary mt-2 inline-block text-sm font-medium hover:underline"
+          className="text-primary mt-2 inline-block text-sm font-semibold hover:underline"
         >
-          Build schedule →
+          Build board →
         </Link>
       </div>
 
       <section className="panel flex flex-col gap-3 p-4">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-medium">Availability responses</h2>
+          <h2 className="text-[15px] font-bold">Availability responses</h2>
           <span className="text-muted-foreground text-sm">
             {submitted.length} of {staffList.length} submitted
           </span>
@@ -101,43 +102,10 @@ export default async function WeekDetailPage({
         {staffList.length === 0 ? (
           <p className="text-muted-foreground text-sm">No staff on the roster yet.</p>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <p className="text-muted-foreground mb-1 text-xs font-medium uppercase">
-                Submitted ({submitted.length})
-              </p>
-              {submitted.length === 0 ? (
-                <p className="text-muted-foreground text-sm">None yet.</p>
-              ) : (
-                <ul className="flex flex-col gap-0.5 text-sm">
-                  {submitted.map((u) => (
-                    <li key={u.id} className="text-green-700">
-                      ✓ {u.name}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <div>
-              <p className="text-muted-foreground mb-1 text-xs font-medium uppercase">
-                Waiting ({waiting.length})
-              </p>
-              {waiting.length === 0 ? (
-                <p className="text-muted-foreground text-sm">Everyone’s in.</p>
-              ) : (
-                <ul className="text-muted-foreground flex flex-col gap-0.5 text-sm">
-                  {waiting.map((u) => (
-                    <li key={u.id}>{u.name}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        )}
-        {week.status === "draft" && (
-          <p className="text-muted-foreground text-xs">
-            Open the week (from the weeks list) so staff can submit.
-          </p>
+          <ResponsesTabs
+            submitted={submitted.map((u) => u.name)}
+            waiting={waiting.map((u) => u.name)}
+          />
         )}
       </section>
 
@@ -148,7 +116,7 @@ export default async function WeekDetailPage({
       />
 
       <section className="panel flex flex-col gap-3 p-4">
-        <h2 className="font-medium">Events</h2>
+        <h2 className="text-[15px] font-bold">Events</h2>
         <AddEventForm
           weekId={week.id}
           startDate={week.start_date}

@@ -18,7 +18,7 @@ export default async function SettingsPage() {
         <Link href="/admin" className="text-muted-foreground text-sm hover:underline">
           ← Schedules
         </Link>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight">Settings</h1>
+        <h1 className="mt-1 text-[26px] font-bold tracking-tight">Settings</h1>
       </div>
       <SettingsForm
         defaultOpen={settings.default_open.slice(0, 5)}

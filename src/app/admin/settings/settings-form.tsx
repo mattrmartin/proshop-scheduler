@@ -31,7 +31,7 @@ export function SettingsForm({
     <div className="flex flex-col gap-4">
       <form action={saveAction} className="panel flex flex-col gap-3 p-4">
         <div>
-          <h2 className="font-medium">Standing business hours</h2>
+          <h2 className="text-[15px] font-bold">Standing business hours</h2>
           <p className="text-muted-foreground text-sm">
             The default the shop runs. New weeks open with these — change them
             once when the season shifts.
@@ -68,7 +68,7 @@ export function SettingsForm({
 
       <form action={applyAction} className="panel flex flex-col gap-3 p-4">
         <div>
-          <h2 className="font-medium">Apply to upcoming weeks</h2>
+          <h2 className="text-[15px] font-bold">Apply to upcoming weeks</h2>
           <p className="text-muted-foreground text-sm">
             Push the standing hours onto every week that’s still accepting
             availability (not yet published). Use after a seasonal change.

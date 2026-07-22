@@ -50,7 +50,7 @@ export function CreateWeekForm({ defaultStart }: { defaultStart: string }) {
       </div>
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
       {state.ok && (
-        <p className="text-sm text-green-600">Week created (draft).</p>
+        <p className="text-sm text-green-600">Week created.</p>
       )}
       <p className="text-muted-foreground text-xs">
         Sets the same hours on all 7 days; you can fine-tune per day and add

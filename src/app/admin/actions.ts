@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/database.types";
 import { isMonday, weekDates } from "@/lib/dates";
 
-const WEEK_STATUSES = ["draft", "open", "published"] as const;
+const WEEK_STATUSES = ["open", "published"] as const;
 type WeekStatus = (typeof WEEK_STATUSES)[number];
 
 export type CreateWeekState = { error?: string; ok?: boolean };

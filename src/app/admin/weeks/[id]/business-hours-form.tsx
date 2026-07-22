@@ -28,13 +28,13 @@ export function BusinessHoursForm({
 
   return (
     <form action={action} className="panel flex flex-col gap-3 p-4">
-      <h2 className="font-medium">Business hours</h2>
+      <h2 className="text-[15px] font-bold">Business hours</h2>
       <input type="hidden" name="week_id" value={weekId} />
       <input type="hidden" name="start_date" value={startDate} />
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 overflow-x-auto">
         {days.map((d) => (
-          <div key={d.date} className="flex items-center gap-2">
+          <div key={d.date} className="flex w-max items-center gap-2">
             <span className="w-24 shrink-0 text-sm">{d.label}</span>
             <input
               type="time"
