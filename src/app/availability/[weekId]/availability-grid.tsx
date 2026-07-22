@@ -40,6 +40,10 @@ export function AvailabilityGrid({
     Object.fromEntries(days.map((d) => [d.date, d.wantOff])),
   );
   const drag = useRef<{ mode: "fill" | "erase" } | null>(null);
+  // A mouse press toggles on pointerdown and paints on drag; the click that
+  // follows must be ignored so it doesn't undo that toggle. Touch never sets
+  // this, so a touch tap always toggles via click.
+  const suppressClick = useRef(false);
   const [state, action, pending] = useActionState(saveAvailability, initialState);
 
   useEffect(() => {
@@ -65,17 +69,43 @@ export function AvailabilityGrid({
     });
   };
 
+  const toggleCell = (date: string, hour: number) => {
+    setSel((prev) => {
+      const next = new Set(prev[date]);
+      if (next.has(hour)) next.delete(hour);
+      else next.add(hour);
+      return { ...prev, [date]: next };
+    });
+  };
+
   useEffect(() => {
     const stop = () => (drag.current = null);
     window.addEventListener("pointerup", stop);
     return () => window.removeEventListener("pointerup", stop);
   }, []);
 
-  const onPointerDown = (date: string, hour: number) => {
+  const onPointerDown = (e: React.PointerEvent, date: string, hour: number) => {
     if (!isActive(date, hour)) return;
+    // Drag-to-paint is a mouse-only nicety. On touch, do nothing here so the
+    // gesture stays a native scroll — a deliberate tap toggles via onClick.
+    if (e.pointerType !== "mouse") {
+      suppressClick.current = false;
+      return;
+    }
+    suppressClick.current = true;
     const has = sel[date]?.has(hour);
     drag.current = { mode: has ? "erase" : "fill" };
     applyCell(date, hour);
+  };
+
+  const onCellClick = (date: string, hour: number) => {
+    // Swallow the click that trails a mouse press (already toggled on down).
+    if (suppressClick.current) {
+      suppressClick.current = false;
+      return;
+    }
+    if (!isActive(date, hour)) return;
+    toggleCell(date, hour);
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
@@ -142,7 +172,8 @@ export function AvailabilityGrid({
                       <div
                         data-date={d.date}
                         data-hour={h}
-                        onPointerDown={() => onPointerDown(d.date, h)}
+                        onPointerDown={(e) => onPointerDown(e, d.date, h)}
+                        onClick={() => onCellClick(d.date, h)}
                         className={[
                           "h-6 w-16 border-b border-r border-l first:border-l",
                           active
