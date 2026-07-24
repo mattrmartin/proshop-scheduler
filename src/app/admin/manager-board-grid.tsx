@@ -14,6 +14,50 @@ function dayHeader(date: string): string {
   return `${wd} ${d}`;
 }
 
+const toMin = (t: string) => {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+};
+
+/**
+ * Total hours a person is scheduled across the week. A close ("C") shift runs
+ * to that day's business close; off/blank days count as zero.
+ */
+function personHours(
+  days: BoardData["days"],
+  cells: Record<string, CellData>,
+  userId: string,
+): number {
+  let mins = 0;
+  for (const day of days) {
+    const a = cells[`${userId}|${day.date}`]?.assignment;
+    if (!a || a.status !== "working" || !a.start) continue;
+    const end = a.isClose
+      ? day.hours
+        ? toMin(day.hours.close)
+        : toMin(a.start)
+      : a.end
+        ? toMin(a.end)
+        : toMin(a.start);
+    const start = toMin(a.start);
+    if (end > start) mins += end - start;
+  }
+  return mins / 60;
+}
+
+const formatHours = (h: number) => (Math.round(h * 2) / 2).toString();
+
+/** Half-hour "HH:MM" marks from open to close (inclusive) for the time pickers. */
+function halfHourSlots(open: string, close: string): string[] {
+  const out: string[] = [];
+  for (let m = toMin(open); m <= toMin(close); m += 30) {
+    out.push(
+      `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`,
+    );
+  }
+  return out;
+}
+
 const PRESETS: { label: string; start: string; end: string; close: boolean }[] = [
   { label: "6–2", start: "06:00", end: "14:00", close: false },
   { label: "6–C", start: "06:00", end: "", close: true },
@@ -93,6 +137,7 @@ export function ManagerBoardGrid({
           date={selected.date}
           userName={selectedUser.name}
           dayLabel={selectedDay.label}
+          hours={selectedDay.hours}
           cell={selectedCell}
           onClose={() => setSelected(null)}
           onSaved={() => {
@@ -131,15 +176,23 @@ function GroupBlock({
       </div>
       {staff.map((u) => {
         const isMe = u.id === highlightUserId;
+        const hours = personHours(days, cells, u.id);
         return (
           <div key={u.id} className="contents">
             <div
-              className={`border-border/70 sticky left-0 z-10 truncate border-b px-2.5 py-2.5 text-[12.5px] font-semibold ${
+              className={`border-border/70 sticky left-0 z-10 border-b px-2.5 py-2.5 ${
                 isMe ? "bg-accent text-accent-foreground" : "bg-card text-foreground"
               }`}
             >
-              {u.name}
-              {isMe && <span className="ml-1 text-[10px] font-normal">(you)</span>}
+              <div className="truncate text-[12.5px] font-semibold">
+                {u.name}
+                {isMe && <span className="ml-1 text-[10px] font-normal">(you)</span>}
+              </div>
+              {hours > 0 && (
+                <div className="time text-[10px] font-normal opacity-60">
+                  {formatHours(hours)}h
+                </div>
+              )}
             </div>
             {days.map((d) => {
               const cell = cells[`${u.id}|${d.date}`];
@@ -220,6 +273,7 @@ function CellSheet({
   date,
   userName,
   dayLabel,
+  hours,
   cell,
   onClose,
   onSaved,
@@ -229,6 +283,7 @@ function CellSheet({
   date: string;
   userName: string;
   dayLabel: string;
+  hours: { open: string; close: string } | null;
   cell: CellData | null;
   onClose: () => void;
   onSaved: () => void;
@@ -240,8 +295,17 @@ function CellSheet({
       ? { start: av.ranges[0].start, end: av.ranges[av.ranges.length - 1].end }
       : null;
 
-  const [start, setStart] = useState(a?.start ?? availWindow?.start ?? "");
-  const [end, setEnd] = useState(a?.end ?? availWindow?.end ?? "");
+  // Business hours are daytime (6a–7p), so AM/PM is never ambiguous — offer
+  // half-hour dropdowns in 12h labels instead of a native AM/PM time picker.
+  const range = hours ?? { open: "06:00", close: "19:00" };
+  const slots = halfHourSlots(range.open, range.close);
+
+  // Normalize to "HH:MM" — DB times come back as "HH:MM:SS" and wouldn't match
+  // the dropdown option values otherwise.
+  const [start, setStart] = useState(
+    (a?.start ?? availWindow?.start ?? "").slice(0, 5),
+  );
+  const [end, setEnd] = useState((a?.end ?? availWindow?.end ?? "").slice(0, 5));
   const [close, setClose] = useState(a?.isClose ?? false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -332,30 +396,43 @@ function CellSheet({
           )}
         </div>
 
-        {/* Custom time — real shifts are wildly individual, so keep exact entry. */}
+        {/* Custom time — half-hour dropdowns, no AM/PM. "Close" = open-ended C. */}
         <div className="flex flex-wrap items-center gap-2 border-t border-[oklch(0.32_0.02_155)] pt-2.5">
-          <input
-            type="time"
+          <select
             value={start}
             onChange={(e) => setStart(e.target.value)}
             className="time rounded-lg border border-[oklch(0.4_0.03_155)] bg-[oklch(0.3_0.03_155)] px-2 py-1.5 text-[12px] text-[oklch(0.97_0.01_95)]"
-          />
+          >
+            <option value="">Start</option>
+            {slots.map((s) => (
+              <option key={s} value={s}>
+                {shortTime(s)}
+              </option>
+            ))}
+          </select>
           <span className="text-[oklch(0.6_0.015_150)]">–</span>
-          <input
-            type="time"
-            value={end}
-            disabled={close}
-            onChange={(e) => setEnd(e.target.value)}
-            className="time rounded-lg border border-[oklch(0.4_0.03_155)] bg-[oklch(0.3_0.03_155)] px-2 py-1.5 text-[12px] text-[oklch(0.97_0.01_95)] disabled:opacity-40"
-          />
-          <label className="flex items-center gap-1 text-[12px]">
-            <input
-              type="checkbox"
-              checked={close}
-              onChange={(e) => setClose(e.target.checked)}
-            />
-            C
-          </label>
+          <select
+            value={close ? "C" : end}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === "C") {
+                setClose(true);
+                setEnd("");
+              } else {
+                setClose(false);
+                setEnd(v);
+              }
+            }}
+            className="time rounded-lg border border-[oklch(0.4_0.03_155)] bg-[oklch(0.3_0.03_155)] px-2 py-1.5 text-[12px] text-[oklch(0.97_0.01_95)]"
+          >
+            <option value="">End</option>
+            {slots.map((s) => (
+              <option key={s} value={s}>
+                {shortTime(s)}
+              </option>
+            ))}
+            <option value="C">Close</option>
+          </select>
           <button
             type="button"
             disabled={pending}
