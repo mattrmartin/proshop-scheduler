@@ -15,9 +15,7 @@ export default async function AdminLayout({
   return (
     <div className="min-h-dvh">
       <AppHeader>
-        <span className="badge bg-secondary text-secondary-foreground">
-          Manager
-        </span>
+        <span className="badge bg-accent text-accent-foreground">Manager</span>
         <span className="text-muted-foreground hidden text-sm sm:inline">
           {user.name}
         </span>
