@@ -24,7 +24,7 @@ export function BrandMark() {
 export function AppHeader({ children }: { children?: React.ReactNode }) {
   return (
     <header className="border-border/70 bg-background/80 sticky top-0 z-20 border-b backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
+      <div className="mx-auto flex w-full max-w-[480px] items-center justify-between px-4 py-3 md:max-w-3xl md:px-6">
         <BrandMark />
         <div className="flex items-center gap-3">{children}</div>
       </div>

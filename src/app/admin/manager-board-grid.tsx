@@ -98,8 +98,10 @@ export function ManagerBoardGrid({
   return (
     <div className="overflow-x-auto">
       <div
-        className="grid min-w-[524px] text-sm"
-        style={{ gridTemplateColumns: "104px repeat(7, 60px)" }}
+        className="grid w-full min-w-[560px] text-sm"
+        style={{
+          gridTemplateColumns: "minmax(104px, 150px) repeat(7, minmax(58px, 1fr))",
+        }}
       >
         {/* header */}
         <div className="section-label bg-muted sticky left-0 z-10 px-2.5 py-2">

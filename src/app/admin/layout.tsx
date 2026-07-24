@@ -23,7 +23,7 @@ export default async function AdminLayout({
         </span>
         <SignOutButton />
       </AppHeader>
-      <main className="mx-auto max-w-[480px] p-4">{children}</main>
+      <main className="mx-auto w-full max-w-[480px] p-4 md:max-w-3xl md:p-6">{children}</main>
     </div>
   );
 }
