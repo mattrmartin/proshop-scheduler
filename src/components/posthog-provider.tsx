@@ -5,6 +5,8 @@ import { Suspense, useEffect } from "react";
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
 
+import { createClient } from "@/lib/supabase/client";
+
 const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 
 if (typeof window !== "undefined" && KEY) {
@@ -20,6 +22,26 @@ if (typeof window !== "undefined" && KEY) {
     // appear as page text — an accepted trade-off for usage insight.
     autocapture: true,
   });
+}
+
+function AuthIdentity() {
+  useEffect(() => {
+    if (!KEY) return;
+    const supabase = createClient();
+    // Ties events + replays to the Supabase auth UUID only — never name/phone.
+    // Fires on INITIAL_SESSION, SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED.
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      const userId = session?.user.id;
+      if (userId) {
+        if (posthog.get_distinct_id() !== userId) posthog.identify(userId);
+      } else {
+        posthog.reset();
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  return null;
 }
 
 function PageviewTracker() {
@@ -43,6 +65,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <PHProvider client={posthog}>
+      <AuthIdentity />
       <Suspense fallback={null}>
         <PageviewTracker />
       </Suspense>
