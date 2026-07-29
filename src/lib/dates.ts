@@ -9,6 +9,14 @@ export function weekDates(startISO: string): string[] {
   );
 }
 
+/** Shift an ISO date by `days` (may be negative). UTC math, ISO out. */
+export function addDays(iso: string, days: number): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d) + days * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+}
+
 export function isMonday(startISO: string): boolean {
   const [y, m, d] = startISO.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d)).getUTCDay() === 1;

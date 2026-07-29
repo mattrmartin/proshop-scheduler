@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import { assignmentLabel, shortTime } from "@/lib/schedule-format";
 import type { BoardData, CellData } from "@/lib/board-data";
-import { saveAssignment } from "./weeks/[id]/board/actions";
+import {
+  saveAssignment,
+  copyPersonFromLastWeek,
+} from "./weeks/[id]/board/actions";
 
 /** "2026-07-27" -> "Mon 27" (compact day header for the 60px columns). */
 function dayHeader(date: string): string {
@@ -121,12 +124,14 @@ export function ManagerBoardGrid({
             key={group.label}
             label={group.label}
             staff={group.staff}
+            weekId={board.weekId}
             days={board.days}
             cells={board.cells}
             interactive={interactive}
             selected={selected}
             highlightUserId={highlightUserId}
             onSelect={(userId, date) => setSelected({ userId, date })}
+            onChanged={onChanged}
           />
         ))}
       </div>
@@ -155,21 +160,25 @@ export function ManagerBoardGrid({
 function GroupBlock({
   label,
   staff,
+  weekId,
   days,
   cells,
   interactive,
   selected,
   highlightUserId,
   onSelect,
+  onChanged,
 }: {
   label: string;
   staff: BoardData["users"];
+  weekId: string;
   days: BoardData["days"];
   cells: Record<string, CellData>;
   interactive: boolean;
   selected: { userId: string; date: string } | null;
   highlightUserId?: string;
   onSelect: (userId: string, date: string) => void;
+  onChanged?: () => void;
 }) {
   return (
     <>
@@ -195,6 +204,13 @@ function GroupBlock({
                   {formatHours(hours)}h
                 </div>
               )}
+              {interactive && (
+                <CopyLastWeekButton
+                  weekId={weekId}
+                  userId={u.id}
+                  onCopied={onChanged}
+                />
+              )}
             </div>
             {days.map((d) => {
               const cell = cells[`${u.id}|${d.date}`];
@@ -214,6 +230,48 @@ function GroupBlock({
         );
       })}
     </>
+  );
+}
+
+/** Copy this person's whole schedule from the prior week into this one. For
+ *  staff who work the same hours every week. */
+function CopyLastWeekButton({
+  weekId,
+  userId,
+  onCopied,
+}: {
+  weekId: string;
+  userId: string;
+  onCopied?: () => void;
+}) {
+  const [pending, startTransition] = useTransition();
+  const [msg, setMsg] = useState<string | null>(null);
+
+  return (
+    <div className="mt-0.5">
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() =>
+          startTransition(async () => {
+            setMsg(null);
+            const r = await copyPersonFromLastWeek(weekId, userId);
+            if (r.error) {
+              setMsg(r.error);
+            } else {
+              setMsg(`Copied ${r.copied} day${r.copied === 1 ? "" : "s"}`);
+              onCopied?.();
+            }
+          })
+        }
+        className="text-primary/70 hover:text-primary text-[9.5px] underline underline-offset-2 disabled:opacity-40"
+      >
+        {pending ? "copying…" : "↺ copy last wk"}
+      </button>
+      {msg && (
+        <div className="text-muted-foreground text-[9px] leading-tight">{msg}</div>
+      )}
+    </div>
   );
 }
 
