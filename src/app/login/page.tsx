@@ -8,14 +8,11 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
 // DEMO one-click logins. Seeded throwaway accounts so Cole/Morgan can walk the
-// whole app without a magic link. This exposes public admin + staff login on the
-// live URL — REMOVE before real launch (see BACKLOG "Remove the dev/demo
-// bypass"). Tracked with [[dev-admin-auth]].
+// whole app without a code. This exposes public admin + staff login on the live
+// URL — REMOVE before real launch (see BACKLOG "Remove the dev/demo bypass").
+// Tracked with [[dev-admin-auth]].
 const DEMO_ACCOUNTS = [
   {
-    // NOTE: stays on +cole until the auth-user email swap runs (converges this
-    // to mattrobm@gmail.com so the demo button and magic link share one auth
-    // user). See BACKLOG apply steps.
     label: "View as Cole — manager (demo)",
     email: "mattrobm+cole@gmail.com",
     password: "ProShopDev!2026",
@@ -27,34 +24,80 @@ const DEMO_ACCOUNTS = [
   },
 ];
 
+/**
+ * Normalize a typed phone to E.164 (US default), matching the roster format
+ * (+1XXXXXXXXXX). Accepts "208-555-1234", "(208) 555 1234", "12085551234",
+ * "+12085551234". Returns null if it can't be made into a plausible number.
+ */
+function toE164(raw: string): string | null {
+  const digits = raw.replace(/\D/g, "");
+  if (raw.trim().startsWith("+")) {
+    return digits.length >= 10 && digits.length <= 15 ? `+${digits}` : null;
+  }
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+  return null;
+}
+
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState("");
+  const [e164, setE164] = useState<string | null>(null); // set once code is sent
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  async function sendMagicLink(withEmail: string) {
+  async function sendCode() {
+    const normalized = toE164(phone);
+    if (!normalized) {
+      setError("Enter a valid phone number, e.g. (208) 555-1234.");
+      return;
+    }
     setPending(true);
     setError(null);
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOtp({
-      email: withEmail,
-      options: {
-        // First sign-in creates the auth user; link_current_auth_user() then
-        // binds it to the pre-seeded roster row by email. An email with no
-        // roster row just lands unprovisioned (no access) — the roster is the
-        // gate, not OTP signup.
-        shouldCreateUser: true,
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
+      phone: normalized,
+      // The roster is the gate: an unrostered number lands unprovisioned (no
+      // access). link_current_auth_user_by_phone() binds a rostered number to
+      // its row on first verify.
+      options: { shouldCreateUser: true },
     });
     setPending(false);
     if (error) {
       setError(error.message);
       return;
     }
-    setSent(true);
+    setE164(normalized);
+  }
+
+  async function verifyCode() {
+    if (!e164) return;
+    setPending(true);
+    setError(null);
+    const supabase = createClient();
+    const { error } = await supabase.auth.verifyOtp({
+      phone: e164,
+      token: code.trim(),
+      type: "sms",
+    });
+    if (error) {
+      setError(error.message);
+      setPending(false);
+      return;
+    }
+    // Bind this auth session to its roster row by phone (first sign-in only).
+    // Idempotent no-op if already linked; surface a real failure.
+    const { error: linkError } = await supabase.rpc(
+      "link_current_auth_user_by_phone",
+    );
+    if (linkError) {
+      setError(linkError.message);
+      setPending(false);
+      return;
+    }
+    router.push("/"); // role-aware landing decides admin vs staff
+    router.refresh();
   }
 
   async function signInDemo(withEmail: string, withPassword: string) {
@@ -70,7 +113,7 @@ export default function LoginPage() {
       setPending(false);
       return;
     }
-    router.push("/"); // role-aware landing decides admin vs staff
+    router.push("/");
     router.refresh();
   }
 
@@ -97,52 +140,70 @@ export default function LoginPage() {
       </div>
 
       <div className="panel flex flex-col gap-4 p-6">
-        {sent ? (
-          <div className="flex flex-col gap-2 text-center">
-            <p className="text-sm font-medium">Check your email</p>
-            <p className="text-muted-foreground text-sm">
-              We sent a sign-in link to{" "}
-              <span className="text-foreground font-medium">{email}</span>. Open
-              it on this device to sign in.
-            </p>
+        {e164 ? (
+          <form
+            className="flex flex-col gap-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void verifyCode();
+            }}
+          >
+            <label className="text-sm font-medium" htmlFor="code">
+              Enter the code we texted {e164}
+            </label>
+            <input
+              id="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              required
+              placeholder="123456"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="border-input bg-background focus-visible:ring-ring/40 rounded-lg border px-3 py-2 text-center text-lg tracking-widest outline-none focus-visible:ring-2"
+            />
+            {error && <p className="text-destructive text-sm">{error}</p>}
+            <Button type="submit" size="lg" disabled={pending}>
+              {pending ? "Verifying…" : "Verify & sign in"}
+            </Button>
             <button
               type="button"
-              className="text-muted-foreground hover:text-foreground mt-2 text-xs underline"
+              className="text-muted-foreground hover:text-foreground text-xs underline"
               onClick={() => {
-                setSent(false);
+                setE164(null);
+                setCode("");
                 setError(null);
               }}
             >
-              Use a different email
+              Use a different number
             </button>
-          </div>
+          </form>
         ) : (
           <form
             className="flex flex-col gap-3"
             onSubmit={(e) => {
               e.preventDefault();
-              void sendMagicLink(email);
+              void sendCode();
             }}
           >
-            <label className="text-sm font-medium" htmlFor="email">
-              Sign in with your email
+            <label className="text-sm font-medium" htmlFor="phone">
+              Sign in with your phone
             </label>
             <input
-              id="email"
-              type="email"
+              id="phone"
+              type="tel"
               required
-              placeholder="you@example.com"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="(208) 555-1234"
+              autoComplete="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               className="border-input bg-background focus-visible:ring-ring/40 rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-2"
             />
             {error && <p className="text-destructive text-sm">{error}</p>}
             <Button type="submit" size="lg" disabled={pending}>
-              {pending ? "Sending…" : "Email me a sign-in link"}
+              {pending ? "Sending…" : "Text me a sign-in code"}
             </Button>
             <p className="text-muted-foreground text-xs">
-              No password. We email you a one-tap link.
+              No password. We text you a one-time code.
             </p>
           </form>
         )}

@@ -234,6 +234,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string | null
       }
+      link_current_auth_user_by_phone: {
+        Args: Record<PropertyKey, never>
+        Returns: string | null
+      }
     }
     Enums: {
       [_ in never]: never
