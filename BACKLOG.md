@@ -10,37 +10,36 @@ Ordered. Top unblocked item first. Keep current: remove done, add deferred.
       set) or deploys get stuck in BLOCKED state. Env vars are Production-only for now.
 
 ## Auth — finish before real launch
-DECISION (owner): go **free** — drop phone/SMS auth. Use **email magic link**
-(Supabase built-in, passwordless, no Twilio, no 10DLC). Unblocks launch now.
-- [~] **Email magic-link auth** — CODE DONE + deployed (migration file, callback
-      route, magic-link login form, `users.email` + `link_current_auth_user()` RPC).
-      **Blocked on apply** (Supabase MCP needs OAuth approval — no CLI/service-role
-      fallback in repo). Remaining steps, in order:
-      1. Authorize MCP: `claude` → `/mcp` → supabase (ref `zrdssdrxglwqgrtlslul`).
-      2. `apply_migration` 20260720000005_user_email_magiclink.sql (adds email col,
-         partial unique index, RPC, seeds Cole.email=mattrobm@gmail.com).
-         Assumes ONE admin row (Cole) — verify before running.
-      3. Converge Cole identity so demo button + magic link = one auth user:
-         `update auth.users set email='mattrobm@gmail.com',
-          email_confirmed_at=coalesce(email_confirmed_at,now())
-          where email='mattrobm+cole@gmail.com';`
-         Then flip DEMO_ACCOUNTS[0].email → mattrobm@gmail.com in login page + push.
-      4. Dashboard → Auth → URL Config: Site URL https://proshop-scheduler.vercel.app;
-         redirects: .../auth/callback + http://localhost:3000/auth/callback.
-      5. Test: magic link to mattrobm@gmail.com → lands as Cole; demo buttons OK.
-      Real roster email collection (roster UI field / intake) = separate follow-up.
-- [ ] **Remove the dev/demo bypass** once real auth is live: the "View as Cole/Morgan
-      (demo)" buttons + DEMO_ACCOUNTS in [src/app/login/page.tsx]. Also the seeded dev
-      users (mattrobm+cole@gmail.com / +morgan) with placeholder phones.
-- [ ] Consider Google sign-in as an even-lower-friction free option alongside magic link.
+DECISION (owner, 2026-07-28): **REVERSED back to SMS.** Cole entered everyone's
+phone numbers (no emails) and expects text sign-in + a text blast on publish, so
+email magic-link fought his data + audience. Going SMS (Supabase phone provider
+via Twilio). Two-track: build all code now; owner provisions Twilio + A2P 10DLC in
+parallel; deploy the login the moment the phone provider is enabled so staff never
+see a dead form. (Email magic-link code from the prior decision is left in the tree
+unused — callback route + link_current_auth_user() by email — remove later if SMS sticks.)
+- [~] **Phone-OTP auth** — CODE DONE (committed, NOT pushed). Login rewritten to
+      phone → texted code → verify ([src/app/login/page.tsx]); migration
+      20260728000006_phone_auth_link.sql adds link_current_auth_user_by_phone()
+      (binds auth session to roster row by digit-normalized phone). Remaining OWNER steps:
+      1. Twilio: account, buy US number, register A2P 10DLC (Sole Proprietor brand
+         + campaign — the long pole), create a Messaging Service.
+      2. Supabase dashboard → Auth → Providers → Phone → enable, plug in Twilio creds.
+      3. Apply migration 20260728000006 (MCP here points at golf-tracker — use
+         interactive `/mcp` or the dashboard SQL editor).
+      4. Deploy (push main) — phone login + publish blast go live together.
+      5. Test: text code to a rostered phone → lands as that person; demo buttons OK.
+- [ ] **Remove the dev/demo bypass** once phone login is verified end-to-end: the
+      "View as Cole/Morgan (demo)" buttons + DEMO_ACCOUNTS in [src/app/login/page.tsx].
+      Also the seeded dev users (mattrobm+cole@gmail.com / +morgan). Do this LAST.
 
-## Notifications — free plan (was SMS/Twilio)
-Lean on the daily-use app (staff open it for "my shifts") + free channels:
-- [ ] **Email notifications** (Resend free tier ~3k/mo): publish blast ("schedule's
-      up" + link), availability reminders to non-submitters (Wed/Thu AM), post-publish
-      edit → notify only the affected person.
-- [ ] (Optional) **Web push / PWA** for engaged users; add SMS for just the availability
-      reminder later only if response rates lag (~$5–10/mo, needs A2P 10DLC).
+## Notifications — SMS (Twilio)
+- [~] **Publish blast** — CODE DONE (committed, NOT pushed). setWeekStatus texts all
+      staff the board link on the open→published transition; [src/lib/sms.ts] is a
+      server-only Twilio sender that no-ops until creds are set. Goes live with the
+      Twilio setup above. Twilio env: TWILIO_ACCOUNT_SID / _AUTH_TOKEN /
+      _MESSAGING_SERVICE_SID (or _FROM_NUMBER), + NEXT_PUBLIC_SITE_URL.
+- [ ] **Post-publish edit → notify only the affected person** (reuse [src/lib/sms.ts]).
+- [ ] **Auto-reminders** to non-submitters (Wed + Thu AM) — needs a scheduled job.
 
 ## Operating loop (daily-use views) — done
 - [x] /today: who's on today (both roles), grouped + ranked, viewer highlighted.
@@ -84,9 +83,12 @@ Accepting → Published. Edits lock at publish.
       (Twilio).**
 - [x] Admin roster management (/admin/roster): add/edit people, rank order, E.164
       phones, no-auth rows for people who haven't logged in yet.
-- [ ] Publish → SMS blast to all staff ("Schedule's up" + link). Needs Twilio.
+- [~] Publish → SMS blast to all staff ("Schedule's up" + link). CODE DONE (see
+      Notifications above); goes live with Twilio setup.
 - [ ] Post-publish edit → notify only affected person.
 - [ ] Auto-reminders to non-submitters (Wed + Thu AM).
+- [x] **Copy a person's schedule from last week** (Cole's ask) — per-person "↺ copy
+      last wk" on the build board; weekday-matched, skips days closed this week.
 
 ## Deferred (v2+) — do NOT build in MVP
 - Auto-generated / solver schedules (keep model forward-compatible).
